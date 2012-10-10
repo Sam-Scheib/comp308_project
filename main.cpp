@@ -221,7 +221,7 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 	glutPostRedisplay();
 
 }
-
+//What is going on here it  makes no sense lol 
 void G308_mouseListener(int button, int state, int x, int y) {
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 		mouseX = x;
