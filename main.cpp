@@ -23,6 +23,7 @@
 #include "define.h"
 #include "quaternion.h"
 #include "imageLoader.h"
+#include "fluid.h"
 
 // Global variables
 GLuint g_mainWnd;
@@ -41,13 +42,14 @@ G308_Point eye = {0.0, 0.0, 1.0};
 G308_Point center = {0.0, 0.0, 0.0};
 G308_Point top = {0.0, 1.0, 0.0};
 
-G308_Point startPoint;
-G308_Point endPoint;
-
-quaternion arcBallQ = quaternion(1,0,0,0);
+G308_Point directionVector;
+G308_Point newVector;
 
 bool lookActive = false, panningActive = false,zoomActive = false;
 int mouseX, mouseY;
+
+// Variables for our individual modules
+Fluid* fluidSim;
 
 void G308_keyboardListener(unsigned char, int, int);
 void G308_mouseListener(int, int, int, int);
@@ -78,6 +80,7 @@ int main(int argc, char** argv)
 
 
 	// Add individual modules here
+	fluidSim = new Fluid(10, 10);
 
 
 	G308_SetLight();
@@ -239,21 +242,21 @@ void G308_mouseMovement(int x, int y) {
 		G308_Point temp = {center.x-eye.x, center.y-eye.y, center.z-eye.z};
 		temp = crossProduct(temp, top);
 		temp = normalise(temp);
-		startPoint = {center.x-eye.x, center.y-eye.y, center.z-eye.z};
+		directionVector = {center.x-eye.x, center.y-eye.y, center.z-eye.z};
 		quaternion up = quaternion((y-mouseY)/20.0, temp);
 		quaternion side = quaternion((x-mouseX)/20.0, top);
 		quaternion q = up * side;
 		q.toMatrix(matrix);
-		endPoint = getNewPoint(startPoint, matrix);
-		center.x = eye.x + endPoint.x;
-		center.y = eye.y + endPoint.y;
-		center.z = eye.z + endPoint.z;
+		newVector = getNewPoint(directionVector, matrix);
+		center.x = eye.x + newVector.x;
+		center.y = eye.y + newVector.y;
+		center.z = eye.z + newVector.z;
 
 		up.toMatrix(matrix);
-		endPoint = getNewPoint(top, matrix);
-		top.x = endPoint.x;
-		top.y = endPoint.y;
-		top.z = endPoint.z;
+		newVector = getNewPoint(top, matrix);
+		top.x = newVector.x;
+		top.y = newVector.y;
+		top.z = newVector.z;
 //		printf("center after %f %f %f\n", center.x, center.y, center.z);
 //		printf("eye after %f %f %f\n", eye.x, eye.y, eye.z);
 //		printf("top after %f %f %f\n", top.x, top.y, top.z);
