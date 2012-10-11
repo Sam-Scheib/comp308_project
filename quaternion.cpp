@@ -19,7 +19,7 @@
 #include "quaternion.h"
 #include <math.h>
 
-float dotproduct(G308_Point p, G308_Point q) {
+float dotProduct(G308_Point p, G308_Point q) {
 	float a = 0;
 	a += p.x * q.x;
 	a += p.y * q.y;
@@ -50,7 +50,7 @@ quaternion::quaternion(float angle, const G308_Point& p) {
 
 //Out by a factor of 2  like in the arc ball paper
 quaternion::quaternion(const G308_Point &p1, const G308_Point& p2) {
-	a = dotproduct(p1, p2);
+	a = dotProduct(p1, p2);
 	G308_Point cross = crossProduct(p1, p2);
 	b = cross.x;
 	c = cross.y;

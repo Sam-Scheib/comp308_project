@@ -21,15 +21,13 @@
 
 // My definition 
 #include "define.h"
-#include "G308_Geometry.h"
 #include "quaternion.h"
-#include "G308_ImageLoader.h"
+#include "imageLoader.h"
 
 // Global variables
 GLuint g_mainWnd;
 GLuint g_nWinWidth  = G308_WIN_WIDTH;
 GLuint g_nWinHeight = G308_WIN_HEIGHT;
-G308_Geometry* objects;
 int rotation = 0.0f;
 
 // Spotlight variables
@@ -78,16 +76,15 @@ int main(int argc, char** argv)
 	glutMouseFunc(G308_mouseListener);
 	glutMotionFunc(G308_mouseMovement);
 
-	objects = new G308_Geometry();
-	objects->LoadObjects();
+
+	// Add individual modules here
+
 
 	G308_SetLight();
 	G308_SetCamera();
 
 	glutIdleFunc(G308_Display);
 	glutMainLoop();
-
-	if(objects != NULL) delete objects;
 
     return 0;
 }
@@ -107,23 +104,10 @@ void G308_Display()
 	if (err != GL_NO_ERROR) {
 		printf("first error is: %s\n", gluErrorString(err));
 	}
-	// [Assignmet1] : render shaded polygon or wireframe
 
-	if (rotation != 0) {
-		glRotatef((float)rotation, 0.0, 1.0, 0.0);
-		objects->RenderGeometry();
-		glRotatef(-rotation, 0.0, 1.0, 0.0);
-		rotation += 2;
-		rotation = rotation % 360;
-	}
-	else
-		objects->RenderGeometry();
+	// Call indivudal display methods here
 
-	err = glGetError();
-	if (err != GL_NO_ERROR) {
-		printf("second error is: %s\n", gluErrorString(err));
-	}
-	SpotLight();
+//	SpotLight();
 	resetCamera();
 
 	glDisable(GL_DEPTH_TEST);
