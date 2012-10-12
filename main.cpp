@@ -38,22 +38,22 @@ float spotXAngle = 266.0, spotYAngle = 59.0;
 
 // Camera variables
 float radius = 300.0;
-G308_Point eye = {0.0, 0.0, 1.0};
+G308_Point eye = {0.0, 0.0, 3.0};
 G308_Point center = {0.0, 0.0, 0.0};
 G308_Point top = {0.0, 1.0, 0.0};
-
-G308_Point directionVector;
-G308_Point newVector;
 
 bool lookActive = false, panningActive = false,zoomActive = false;
 int mouseX, mouseY;
 
 // Variables for our individual modules
 Fluid* fluidSim;
+bool displayFluid = true;
 
 void G308_keyboardListener(unsigned char, int, int);
 void G308_mouseListener(int, int, int, int);
 void G308_mouseMovement(int, int);
+void panning(float, float);
+void zooming(float);
 void G308_Display() ;
 void G308_Reshape(int w, int h) ;
 void G308_SetCamera();
@@ -80,7 +80,9 @@ int main(int argc, char** argv)
 
 
 	// Add individual modules here
-	fluidSim = new Fluid(10, 10);
+	if (displayFluid) {
+		fluidSim = new Fluid(10, 10);
+	}
 
 
 	G308_SetLight();
@@ -109,6 +111,10 @@ void G308_Display()
 	}
 
 	// Call indivudal display methods here
+	if (displayFluid) {
+		fluidSim->calculateSurface();
+		fluidSim->displayFluid();
+	}
 
 //	SpotLight();
 	resetCamera();
@@ -165,16 +171,16 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		//printf("rotation is %d\n", rotation);
 		break;
 	case 'w':
-		spotPosition.z -= 0.1;
+		zooming(-0.1);
 		break;
 	case 's':
-		spotPosition.z += 0.1;
+		zooming(0.1);
 		break;
 	case 'a':
-		spotPosition.x -= 0.1;
+		panning(0.1, 0);
 		break;
 	case 'd':
-		spotPosition.x += 0.1;
+		panning(-0.1, 0);
 		break;
 	case 'r':
 		spotPosition.y += 0.1;
@@ -206,9 +212,31 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		break;
 	}
 	glutPostRedisplay();
-
 }
-//What is going on here it  makes no sense lol 
+
+void panning(float xChange, float yChange) {
+	G308_Point temp = {center.x-eye.x, center.y-eye.y, center.z-eye.z};
+	temp = crossProduct(temp, top);
+	temp = normalise(temp);
+	eye.x -= temp.x * xChange - top.x * yChange;
+	eye.y -= temp.y * xChange - top.y * yChange;
+	eye.z -= temp.z * xChange - top.z * yChange;
+	center.x -= temp.x * xChange - top.x * yChange;
+	center.y -= temp.y * xChange - top.y * yChange;
+	center.z -= temp.z * xChange - top.z * yChange;
+}
+
+void zooming(float zChange) {
+	G308_Point temp = {center.x-eye.x, center.y-eye.y, center.z-eye.z};
+	temp = normalise(temp);
+	eye.x -= temp.x * zChange;
+	eye.y -= temp.y * zChange;
+	eye.z -= temp.z * zChange;
+	center.x -= temp.x * zChange;
+	center.y -= temp.y * zChange;
+	center.z -= temp.z * zChange;
+}
+
 void G308_mouseListener(int button, int state, int x, int y) {
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 		mouseX = x;
@@ -239,15 +267,15 @@ void G308_mouseMovement(int x, int y) {
 //	printf("top before %f %f %f\n", top.x, top.y, top.z);
 	if(lookActive) {
 		float matrix[16];
-		G308_Point temp = {center.x-eye.x, center.y-eye.y, center.z-eye.z};
+		G308_Point directionVector = {center.x-eye.x, center.y-eye.y, center.z-eye.z};
+		G308_Point temp = directionVector;
 		temp = crossProduct(temp, top);
 		temp = normalise(temp);
-		directionVector = {center.x-eye.x, center.y-eye.y, center.z-eye.z};
-		quaternion up = quaternion((y-mouseY)/20.0, temp);
-		quaternion side = quaternion((x-mouseX)/20.0, top);
+		quaternion up = quaternion((mouseY-y)/20.0, temp);
+		quaternion side = quaternion((mouseX-x)/20.0, top);
 		quaternion q = up * side;
 		q.toMatrix(matrix);
-		newVector = getNewPoint(directionVector, matrix);
+		G308_Point newVector = getNewPoint(directionVector, matrix);
 		center.x = eye.x + newVector.x;
 		center.y = eye.y + newVector.y;
 		center.z = eye.z + newVector.z;
@@ -265,8 +293,8 @@ void G308_mouseMovement(int x, int y) {
 	}
 	else if (panningActive) {
 //		printf("in panning\n");temp
-		float xChange = (x-mouseX)/10.0;
-		float yChange = (y-mouseY)/10.0;
+		float xChange = (mouseX-x)/20.0;
+		float yChange = (mouseY-y)/20.0;
 		G308_Point temp = {center.x-eye.x, center.y-eye.y, center.z-eye.z};
 		temp = crossProduct(temp, top);
 		temp = normalise(temp);

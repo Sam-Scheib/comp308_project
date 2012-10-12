@@ -11,10 +11,12 @@ class Fluid {
 private:
 	int rows, cols;
 	float** heights;
+	float** velocities;
 
 public:
 	Fluid(int, int);
 	~Fluid();
-	void displaySurface();
+	void calculateSurface();
+	void displayFluid();
 };
 
