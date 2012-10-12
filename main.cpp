@@ -38,7 +38,7 @@ float spotXAngle = 266.0, spotYAngle = 59.0;
 
 // Camera variables
 float radius = 300.0;
-G308_Point eye = {0.0, 0.0, 3.0};
+G308_Point eye = {0.0, 0.0, 1.0};
 G308_Point center = {0.0, 0.0, 0.0};
 G308_Point top = {0.0, 1.0, 0.0};
 
@@ -112,7 +112,6 @@ void G308_Display()
 
 	// Call indivudal display methods here
 	if (displayFluid) {
-		fluidSim->calculateSurface();
 		fluidSim->displayFluid();
 	}
 
@@ -166,10 +165,18 @@ G308_Point getNewPoint(G308_Point p, float* matrix) {
 
 void G308_keyboardListener(unsigned char key, int x, int y) {
 	switch(key){
+	case 'c': //step through a display frame
+
+		fluidSim->calculateSurface();
+		glutPostRedisplay();
+		break;
 	case 't':
 		rotation += 2;
 		//printf("rotation is %d\n", rotation);
 		break;
+	//
+	// wasd controls for camera movement
+	//
 	case 'w':
 		zooming(-0.1);
 		break;
