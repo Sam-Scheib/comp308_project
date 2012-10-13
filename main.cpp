@@ -81,7 +81,7 @@ int main(int argc, char** argv)
 
 	// Add individual modules here
 	if (displayFluid) {
-		fluidSim = new Fluid(30, 30);
+		fluidSim = new Fluid(50, 50);
 	}
 
 
