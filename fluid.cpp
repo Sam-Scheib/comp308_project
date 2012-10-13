@@ -18,6 +18,7 @@
 Fluid::Fluid(int row, int col) {
 	wavespeed = 0.02;
 	wallheight = 5.0;
+	groundheight = 0.0;
 	slope = -2.0;
 	rows = row;
 	cols = col;
@@ -107,6 +108,16 @@ void Fluid::randomiseHeights() {
 	}
 }
 
+void Fluid::flattenTerrain() {
+	for (int i = 1; i < rows-1; i++) {
+		for (int j = 1; j < cols-1; j++) {
+			ground[i][j] = groundheight;
+		}
+	}
+	calcluateNormals(ground);
+	generateTerrain();
+}
+
 void Fluid::randomiseTerrain() {
 	for (int i = 1; i < rows-1; i++) {
 		for (int j = 1; j < cols-1; j++) {
@@ -146,11 +157,13 @@ void Fluid::wave() {
 }
 
 float Fluid::getHeightValue(int x, int y, int selfX, int selfY) {
-	if (heights[selfX][selfY] > ground[x][y] || heights[x][y] > ground[x][y]) {
-		count = count + 1.0;
+	if (heights[selfX][selfY] < heights[x][y] && heights[x][y] > ground[x][y]) {
 		return heights[x][y];
 	}
-	return 0.0;
+	else if (heights[selfX][selfY] > heights[x][y]) {
+		return heights[x][y];
+	}
+	return heights[selfX][selfY];
 }
 void Fluid::calculateSurface() {
 	for (int k = 0; k < rows; k++) {
@@ -170,17 +183,13 @@ void Fluid::calculateSurface() {
 			float sth = getHeightValue(i+1,j, i, j);
 			float wst = getHeightValue(i,j-1, i, j);
 			float est = getHeightValue(i,j+1, i, j);
-			if (count > 0.0) {
-				velocities[i][j] += ((nth + sth + wst + est)/count - heights[i][j]) * wavespeed;
-				//velocities[i][j] += ((heights[i-1][j] + heights[i+1][j] + heights[i][j-1] + heights[i][j+1])/4.0 - heights[i][j]) * wavespeed;
-				//printf("velocity of %d,%d is %1.8f\n", i, j, velocities[i][j]);
-				totalV += velocities[i][j];
-				velocities[i][j] *= 0.997;
-				//printf("dampened velocity of %d,%d is %1.8f\n", i, j, velocities[i][j]);
-				//printf("height of %d,%d is %f\n", i, j, heights[i][j]);
-			}
-			else
-				velocities[i][j] = 0.0;
+			velocities[i][j] += ((nth + sth + wst + est)/4.0 - heights[i][j]) * wavespeed;
+			//velocities[i][j] += ((heights[i-1][j] + heights[i+1][j] + heights[i][j-1] + heights[i][j+1])/4.0 - heights[i][j]) * wavespeed;
+			//printf("velocity of %d,%d is %1.8f\n", i, j, velocities[i][j]);
+			totalV += velocities[i][j];
+			velocities[i][j] *= 0.997;
+			//printf("dampened velocity of %d,%d is %1.8f\n", i, j, velocities[i][j]);
+			//printf("height of %d,%d is %f\n", i, j, heights[i][j]);
 		}
 	}
 	for (int i = 1; i < rows-1; i++) {

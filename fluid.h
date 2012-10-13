@@ -12,7 +12,7 @@ class Fluid {
 private:
 	int rows, cols, count;
 	int terrainList;
-	float wavespeed, slope, wallheight;
+	float wavespeed, slope, wallheight, groundheight;
 	float** heights;
 	float** ground;
 	float** velocities;
@@ -27,6 +27,7 @@ public:
 	~Fluid();
 	void randomiseHeights();
 	void randomiseTerrain();
+	void flattenTerrain();
 	void calculateSurface();
 	void lowerWater();
 	void poorWater();
