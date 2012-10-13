@@ -61,11 +61,11 @@ Fluid::~Fluid() {
 void Fluid::calculateSurface() {
 	for (int k = 0; k < rows; k++) {
 		heights[k][0] = heights[k][1];
-		heights[k][rows-1] = heights[k][rows-2];
+		heights[k][cols-1] = heights[k][cols-2];
 	}
 	for (int l = 0; l < cols; l++) {
 		heights[0][l] = heights[1][l];
-		heights[cols-1][l] = heights[cols-2][l];
+		heights[rows-1][l] = heights[rows-2][l];
 	}
 
 	float totalV = 0.0;
@@ -74,13 +74,17 @@ void Fluid::calculateSurface() {
 			velocities[i][j] += (heights[i-1][j] + heights[i+1][j] + heights[i][j-1] + heights[i][j+1])/4.0 - heights[i][j];
 			//printf("velocity of %d,%d is %1.8f\n", i, j, velocities[i][j]);
 			totalV += velocities[i][j];
-			//velocities[i][j] *= 0.99;
+			velocities[i][j] *= 0.99;
 			//printf("dampened velocity of %d,%d is %1.8f\n", i, j, velocities[i][j]);
-			heights[i][j] += velocities[i][j];
 			//printf("height of %d,%d is %f\n", i, j, heights[i][j]);
 		}
 	}
-	printf("sum of velocity is %f\n", totalV);
+	for (int i = 1; i < rows-1; i++) {
+		for (int j = 1; j < cols-1; j++) {
+			heights[i][j] += velocities[i][j];
+		}
+	}
+	//printf("sum of velocity is %f\n", totalV);
 }
 
 void Fluid::displayFluid() {
@@ -104,10 +108,10 @@ void Fluid::displayFluid() {
 	for (int i = 1; i < rows-2; i++) {
 		for (int j = 1; j < cols-2; j++) {
 			glPushMatrix();
-			if (velocities[i][j] > 0.0)
-				glColor3f(1.0, 0.0, 0.0);
-			else if (velocities[i][j] < 0.0)
-							glColor3f(0.0, 1.0, 0.0);
+//			if (velocities[i][j] > 0.0)
+//				glColor3f(1.0, 0.0, 0.0);
+//			else if (velocities[i][j] < 0.0)
+//							glColor3f(0.0, 1.0, 0.0);
 				glTranslatef(i, 2.0 + heights[i][j], j);
 				glutSolidSphere(0.1, 10, 10);
 
