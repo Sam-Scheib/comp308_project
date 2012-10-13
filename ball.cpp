@@ -27,12 +27,12 @@ void ball::render(){
 
 G308_Point* ball::getVector(){
 
-	return velocity;
+	return &velocity;
 }
 
 G308_Point* ball::getPosition(){
 
-	return position;
+	return &position;
 }
 
 float* ball::getMass(){
@@ -49,10 +49,10 @@ void ball::applyForce(G308_Point* inputForce){
 
 
 bool ball::collision(collidable* object){
-	G308_Point dist = subtract(position,*object->getPosition());
-
+	//G308_Point dist = subtract(position,*object->getPosition());
 	//Normalize this value
-	velocity = subtract(velocity,)
+
+
 
 
 return true;

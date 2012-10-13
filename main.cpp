@@ -117,9 +117,6 @@ void G308_Display()
 		fluidSim->displayFluid();
 	}
 
-	if(displayCollision){
-
-	}
 
 
 //	SpotLight();
