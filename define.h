@@ -32,6 +32,12 @@
 #define G308_SHADE_POLYGON 0		
 #define G308_SHADE_WIREFRAME 1
 
+//stuff for skeleton and ik
+#define BUFF_SIZE  100
+#define READ_FAILURE  1
+#define READ_SUCCESS  0
+#define MAX_BONES_IN_ASF_FILE  256
+
 // Define number of vertex 
 #define G308_NUM_VERTEX_PER_FACE 3 // Triangle = 3, Quad = 4 
 

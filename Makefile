@@ -6,7 +6,7 @@ LIBS=-lGL -lglut -lGLU -ljpeg -lpng15 -lm
 IPATH= -I/usr/pkg/include
 
 all: Project
-Project : main.o quaternion.o fluid.o imageLoader.o ball.o
+Project : main.o quaternion.o fluid.o imageLoader.o ball.o G308_Skeleton.o frame_controller.o
 	$(CC) -o $@ $^ $(LIBS) $(LPATH) $(LDPATH)
 .cpp.o: 
 	$(CC) $(CFLAGS) -c -o $@ $^ $(IPATH)

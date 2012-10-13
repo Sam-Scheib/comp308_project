@@ -25,6 +25,9 @@
 #include "imageLoader.h"
 #include "fluid.h"
 
+//defines for ik
+#include "G308_Skeleton.h"
+
 // Global variables
 GLuint g_mainWnd;
 GLuint g_nWinWidth  = G308_WIN_WIDTH;
@@ -48,6 +51,11 @@ int mouseX, mouseY;
 // Variables for our individual modules
 Fluid* fluidSim;
 bool displayFluid = true, waterFlowing = false;
+
+//Francis ~IK stuff
+bool displayRobot = true;//draw robot arms
+bool calculateIK = false;//calculate ik values
+Skeleton* robot;//pointer to our robot arm, will become a vector at some point
 
 void G308_keyboardListener(unsigned char, int, int);
 void G308_mouseListener(int, int, int, int);
@@ -82,6 +90,9 @@ int main(int argc, char** argv)
 	// Add individual modules here
 	if (displayFluid) {
 		fluidSim = new Fluid(50, 50);
+	}
+	if (displayRobot) {
+
 	}
 
 
