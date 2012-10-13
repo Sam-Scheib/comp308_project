@@ -16,22 +16,27 @@
 #include "quaternion.h"
 
 Fluid::Fluid(int row, int col) {
-	wavespeed = 0.2;
+	wavespeed = 0.02;
+	wallheight = 3.0;
+	groundHeight = -2.0;
 	rows = row;
 	cols = col;
 
 	srand(time(NULL));
 
 	heights = (float**) calloc(row, sizeof(float*));
+	ground = (float**) calloc(row, sizeof(float*));
 	velocities = (float**) calloc(row, sizeof(float*));
 	normals = (G308_Point**) calloc(row, sizeof(G308_Point*));
 	float totalV = 0.0;
 	for (int i = 0; i < row; i++) {
 		heights[i] = (float*) calloc(col, sizeof(float));
+		ground[i] = (float*) calloc(col, sizeof(float));
 		velocities[i] = (float*) calloc(col, sizeof(float));
 		normals[i] = (G308_Point*) calloc(col, sizeof(G308_Point));
 		for (int j = 0; j < col; j++) {
-			heights[i][j] = 0.0; //(float)rand() / ((float)RAND_MAX/2) - 1.0; // Random height values
+			heights[i][j] = 1.8; //(float)rand() / ((float)RAND_MAX/2) - 1.0; // Random height values
+			ground[i][j] = (float)rand() / ((float)RAND_MAX);
 			normals[i][j] = {0.0, 0.0, 0.0};
 			//heights[i][j] = (float)i/row + (float)j/col;
 			printf("height of %d,%d is %f\n", i, j, heights[i][j]);
@@ -39,9 +44,9 @@ Fluid::Fluid(int row, int col) {
 			totalV += velocities[i][j];
 		}
 	}
-	heights[4][4] = 1.0;
-	calcluateNormals();
+	calcluateNormals(ground);
 	generateTerrain();
+	calcluateNormals(heights);
 	printf("sum of velocity is %f\n", totalV);
 
 }
@@ -64,16 +69,35 @@ Fluid::~Fluid() {
 void Fluid::randomiseHeights() {
 	for (int i = 1; i < rows-1; i++) {
 		for (int j = 1; j < cols-1; j++) {
-			heights[i][j] = (float)rand() / ((float)RAND_MAX) - 1.0;
+			heights[i][j] = (float)rand() / ((float)RAND_MAX) + 1.0;
 			velocities[i][j] = 0.0;
 		}
 	}
 }
 
-//	all i,j do v[i,j] += (u[i-1,j] + u[i+1,j] + u[i,j-1] + u[i,j+1])/4
-//	- u[i,j];
-//	forall i,j do v[i,j] *= 0.99;
-//	forall i,j do u[i,j] += v[i,j];
+void Fluid::lowerWater() {
+	for (int i = 1; i < rows-1; i++) {
+		for (int j = 1; j < cols-1; j++) {
+			heights[i][j] -= 0.1;
+			if (heights[i][j] < ground[i][j]) {
+				heights[i][j] = ground[i][j];
+				velocities[i][j] = 0.0;
+			}
+		}
+	}
+}
+
+void Fluid::poorWater() {
+	heights[rows/2][cols/2] += 0.5;
+}
+
+float Fluid::getHeightValue(int x, int y, int selfX, int selfY) {
+	if (heights[selfX][selfY] > ground[x][y] || heights[x][y] > ground[x][y]) {
+		count = count + 1.0;
+		return heights[x][y];
+	}
+	return 0.0;
+}
 void Fluid::calculateSurface() {
 	for (int k = 0; k < rows; k++) {
 		heights[k][0] = heights[k][1];
@@ -87,31 +111,44 @@ void Fluid::calculateSurface() {
 	float totalV = 0.0;
 	for (int i = 1; i < rows-1; i++) {
 		for (int j = 1; j < cols-1; j++) {
-			velocities[i][j] += ((heights[i-1][j] + heights[i+1][j] + heights[i][j-1] + heights[i][j+1])/4.0 - heights[i][j]) * wavespeed;
-			//printf("velocity of %d,%d is %1.8f\n", i, j, velocities[i][j]);
-			totalV += velocities[i][j];
-			velocities[i][j] *= 0.995;
-			//printf("dampened velocity of %d,%d is %1.8f\n", i, j, velocities[i][j]);
-			//printf("height of %d,%d is %f\n", i, j, heights[i][j]);
+			count = 0.0;
+			float nth = getHeightValue(i-1,j, i, j);
+			float sth = getHeightValue(i+1,j, i, j);
+			float wst = getHeightValue(i,j-1, i, j);
+			float est = getHeightValue(i,j+1, i, j);
+			if (count > 0.0) {
+				velocities[i][j] += ((nth + sth + wst + est)/count - heights[i][j]) * wavespeed;
+				//velocities[i][j] += ((heights[i-1][j] + heights[i+1][j] + heights[i][j-1] + heights[i][j+1])/4.0 - heights[i][j]) * wavespeed;
+				//printf("velocity of %d,%d is %1.8f\n", i, j, velocities[i][j]);
+				totalV += velocities[i][j];
+				velocities[i][j] *= 0.995;
+				//printf("dampened velocity of %d,%d is %1.8f\n", i, j, velocities[i][j]);
+				//printf("height of %d,%d is %f\n", i, j, heights[i][j]);
+			}
+			else
+				velocities[i][j] = 0.0;
 		}
 	}
 	for (int i = 1; i < rows-1; i++) {
 		for (int j = 1; j < cols-1; j++) {
 			heights[i][j] += velocities[i][j];
+			if (heights[i][j] < ground[i][j]) {
+				heights[i][j] = ground[i][j];
+				velocities[i][j] = 0.0;
+			}
 		}
 	}
-	calcluateNormals();
+	calcluateNormals(heights);
 	//printf("sum of velocity is %f\n", totalV);
 }
 
-void Fluid::calcluateNormals() {
-	//TODO: calculate the normals of each point
+void Fluid::calcluateNormals(float** values) {
 	for (int i = 1; i < rows-1; i++) {
 		for (int j = 1; j < cols-1; j++) {
-			G308_Point nth = {0.0, heights[i][j-1]-heights[i][j], -1.0};
-			G308_Point est = {1.0, heights[i+1][j]-heights[i][j], 0.0};
-			G308_Point sth = {0.0, heights[i][j+1]-heights[i][j], 1.0};
-			G308_Point wst = {-1.0, heights[i-1][j]-heights[i][j], 0.0};
+			G308_Point nth = {0.0, values[i][j-1]-values[i][j], -1.0};
+			G308_Point est = {1.0, values[i+1][j]-values[i][j], 0.0};
+			G308_Point sth = {0.0, values[i][j+1]-values[i][j], 1.0};
+			G308_Point wst = {-1.0, values[i-1][j]-values[i][j], 0.0};
 			G308_Point nthNorm = crossProduct(nth, wst);
 			G308_Point estNorm = crossProduct(est, nth);
 			G308_Point sthNorm = crossProduct(sth, est);
@@ -148,35 +185,26 @@ void Fluid::displayFluid() {
 	glBegin(GL_QUADS);
 	for (int i = 1; i < rows-2; i++) {
 		for (int j = 1; j < cols-2; j++) {
-//			glPushMatrix();
-//			if (velocities[i][j] > 0.0)
-//				glColor3f(1.0, 0.0, 0.0);
-//			else if (velocities[i][j] < 0.0)
-//				glColor3f(0.0, 1.0, 0.0);
-//			glTranslatef(i, 2.0 + heights[i][j], j);
-//			glutSolidSphere(0.1, 10, 10);ray[m_pTriangles[i].t3];
 
 //			glNormal3f(0.0, 1.0, 0.0);
 //			glTexCoord2f(texture1.u/0.2, texture1.v/0.2);
 			glNormal3f(normals[i][j].x, normals[i][j].y, normals[i][j].z);
-			glVertex3f(i, 2.0 + heights[i][j], j);
+			glVertex3f(i, heights[i][j], j);
 
 //			glNormal3f(0.0, 1.0, 0.0);
 //			glTexCoord2f(texture2.u/0.2, texture2.v/0.2);
 			glNormal3f(normals[i+1][j].x, normals[i+1][j].y, normals[i+1][j].z);
-			glVertex3f(i+1, 2.0 + heights[i+1][j], j);
+			glVertex3f(i+1, heights[i+1][j], j);
 
 //			glNormal3f(0.0, 1.0, 0.0);
 //			glTexCoord2f(texture3.u/0.2, texture3.v/0.2);
 			glNormal3f(normals[i+1][j+1].x, normals[i+1][j+1].y, normals[i+1][j+1].z);
-			glVertex3f(i+1, 2.0 + heights[i+1][j+1], j+1);
+			glVertex3f(i+1, heights[i+1][j+1], j+1);
 
 //			glNormal3f(0.0, 1.0, 0.0);
 //			glTexCoord2f(texture3.u/0.2, texture3.v/0.2);
 			glNormal3f(normals[i][j+1].x, normals[i][j+1].y, normals[i][j+1].z);
-			glVertex3f(i, 2.0 + heights[i][j+1], j+1);
-
-//			glPopMatrix();
+			glVertex3f(i, heights[i][j+1], j+1);
 		}
 	}
 	glEnd();
@@ -193,22 +221,47 @@ void Fluid::generateTerrain() {
 	glBegin(GL_QUADS);
 
 		// GROUND
-		glColor3f(0.4, 0.4, 0.4);
+		glColor3f(0.858824, 0.858824, 0.439216);
 
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f((float)rows-2, 0.0, (float)cols-2);
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f((float)rows-2, 0.0, (float)cols-2);
+//
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f(1.0, 0.0, (float)cols-2);
+//
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f(1.0, 0.0, 1.0);
+//
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f((float)rows-2, 0.0, 1.0);
 
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f(1.0, 0.0, (float)cols-2);
+		for (int i = 1; i < rows-2; i++) {
+			for (int j = 1; j < cols-2; j++) {
 
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f(1.0, 0.0, 1.0);
+	//			glNormal3f(0.0, 1.0, 0.0);
+	//			glTexCoord2f(texture1.u/0.2, texture1.v/0.2);
+				glNormal3f(normals[i][j].x, normals[i][j].y, normals[i][j].z);
+				glVertex3f(i, ground[i][j]+0.01, j);
 
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f((float)rows-2, 0.0, 1.0);
+	//			glNormal3f(0.0, 1.0, 0.0);
+	//			glTexCoord2f(texture2.u/0.2, texture2.v/0.2);
+				glNormal3f(normals[i+1][j].x, normals[i+1][j].y, normals[i+1][j].z);
+				glVertex3f(i+1, ground[i+1][j]+0.01, j);
+
+	//			glNormal3f(0.0, 1.0, 0.0);
+	//			glTexCoord2f(texture3.u/0.2, texture3.v/0.2);
+				glNormal3f(normals[i+1][j+1].x, normals[i+1][j+1].y, normals[i+1][j+1].z);
+				glVertex3f(i+1, ground[i+1][j+1]+0.01, j+1);
+
+	//			glNormal3f(0.0, 1.0, 0.0);
+	//			glTexCoord2f(texture3.u/0.2, texture3.v/0.2);
+				glNormal3f(normals[i][j+1].x, normals[i][j+1].y, normals[i][j+1].z);
+				glVertex3f(i, ground[i][j+1]+0.01, j+1);
+			}
+		}
 
 		// FRONT WALL
-		glColor3f(0.0, 0.9, 0.9);
+		glColor3f(0.38, 0.42, 0.32);
 
 		glNormal3f(0.0, 1.0, 0.0);
 		glVertex3f((float)rows-2, 0.0, (float)cols-2);
@@ -217,13 +270,13 @@ void Fluid::generateTerrain() {
 		glVertex3f(1.0, 0.0, (float)cols-2);
 
 		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f(1.0, 2.0, (float)cols-2);
+		glVertex3f(1.0, wallheight, (float)cols-2);
 
 		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f((float)rows-2, 2.0, (float)cols-2);
+		glVertex3f((float)rows-2, wallheight, (float)cols-2);
 
 		// LEFT WALL
-		glColor3f(0.9, 0.0, 0.9);
+		//glColor3f(0.9, 0.0, 0.9);
 
 		glNormal3f(0.0, 1.0, 0.0);
 		glVertex3f(1.0, 0.0, (float)cols-2);
@@ -232,13 +285,13 @@ void Fluid::generateTerrain() {
 		glVertex3f(1.0, 0.0, 1.0);
 
 		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f(1.0, 2.0, 1.0);
+		glVertex3f(1.0, wallheight, 1.0);
 
 		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f(1.0, 2.0, (float)cols-2);
+		glVertex3f(1.0, wallheight, (float)cols-2);
 
 		// BACK WALL
-		glColor3f(0.9, 0.9, 0.0);
+		//glColor3f(0.9, 0.9, 0.0);
 
 		glNormal3f(0.0, 1.0, 0.0);
 		glVertex3f(1.0, 0.0, 1.0);
@@ -247,13 +300,13 @@ void Fluid::generateTerrain() {
 		glVertex3f((float)rows-2, 0.0, 1.0);
 
 		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f((float)rows-2, 2.0, 1.0);
+		glVertex3f((float)rows-2, wallheight, 1.0);
 
 		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f(1.0, 2.0, 1.0);
+		glVertex3f(1.0, wallheight, 1.0);
 
 		// RIGHT WALL
-		glColor3f(0.9, 0.0, 0.0);
+		//glColor3f(0.9, 0.0, 0.0);
 
 		glNormal3f(0.0, 1.0, 0.0);
 		glVertex3f((float)rows-2, 0.0, (float)cols-2);
@@ -262,10 +315,10 @@ void Fluid::generateTerrain() {
 		glVertex3f((float)rows-2, 0.0, 1.0);
 
 		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f((float)rows-2, 2.0, 1.0);
+		glVertex3f((float)rows-2, wallheight, 1.0);
 
 		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f((float)rows-2, 2.0, (float)cols-2);
+		glVertex3f((float)rows-2, wallheight, (float)cols-2);
 
 	glEnd();
 	glEndList();

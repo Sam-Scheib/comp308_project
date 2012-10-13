@@ -47,7 +47,7 @@ int mouseX, mouseY;
 
 // Variables for our individual modules
 Fluid* fluidSim;
-bool displayFluid = true;
+bool displayFluid = true, waterFlowing = false;
 
 void G308_keyboardListener(unsigned char, int, int);
 void G308_mouseListener(int, int, int, int);
@@ -112,6 +112,8 @@ void G308_Display()
 
 	// Call indivudal display methods here
 	if (displayFluid) {
+		if (waterFlowing)
+			fluidSim->calculateSurface();
 		fluidSim->displayFluid();
 	}
 
@@ -165,14 +167,29 @@ G308_Point getNewPoint(G308_Point p, float* matrix) {
 
 void G308_keyboardListener(unsigned char key, int x, int y) {
 	switch(key){
-	case 'c': //step through a display frame
-
+	// step through a display frame
+	case 'c':
 		fluidSim->calculateSurface();
 		glutPostRedisplay();
+		break;
+	// toggle water flowing naturally
+	case 'x':
+		waterFlowing = !waterFlowing;
 		break;
 	case 't':
 		rotation += 2;
 		//printf("rotation is %d\n", rotation);
+		break;
+	// randomise the heights of the water
+	case 'r':
+		fluidSim->randomiseHeights();
+		break;
+	case 'f':
+		fluidSim->lowerWater();
+		break;
+	// add water to the centre of the pool
+	case 'p':
+		fluidSim->poorWater();
 		break;
 	//
 	// wasd controls for camera movement
@@ -189,12 +206,8 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 	case 'd':
 		panning(-0.2, 0);
 		break;
-	case 'r':
-		fluidSim->randomiseHeights();
-		break;
-	case 'f':
-		spotPosition.y -= 0.1;
-		break;
+
+	// Old lighting controls
 	case 'e':
 		spotCutoff += 1.0;
 		if (spotCutoff > 90)
