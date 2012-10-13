@@ -16,6 +16,7 @@ private:
 public:
 	Fluid(int, int);
 	~Fluid();
+	void randomiseHeights();
 	void calculateSurface();
 	void displayFluid();
 };

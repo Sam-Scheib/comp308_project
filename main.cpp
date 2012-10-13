@@ -81,7 +81,7 @@ int main(int argc, char** argv)
 
 	// Add individual modules here
 	if (displayFluid) {
-		fluidSim = new Fluid(10, 10);
+		fluidSim = new Fluid(30, 30);
 	}
 
 
@@ -190,7 +190,7 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		panning(-0.1, 0);
 		break;
 	case 'r':
-		spotPosition.y += 0.1;
+		fluidSim->randomiseHeights();
 		break;
 	case 'f':
 		spotPosition.y -= 0.1;
