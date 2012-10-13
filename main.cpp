@@ -189,9 +189,9 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 	case 'x':
 		waterFlowing = !waterFlowing;
 		break;
+	// flatten the terrain
 	case 't':
-		rotation += 2;
-		//printf("rotation is %d\n", rotation);
+		fluidSim->flattenTerrain();
 		break;
 	// randomise the heights of the water
 	case 'r':
