@@ -35,6 +35,30 @@ G308_Point crossProduct(G308_Point p, G308_Point q) {
 	return cross;
 }
 
+G308_Point Add(G308_Point p, G308_Point q){
+	G308_Point add;
+	add.x = p.x+q.x;
+	add.y = p.y-q.y;
+	add.z = p.z-q.z;
+	return add;
+}
+
+G308_Point subtract(G308_Point p, G308_Point q){
+	G308_Point sub;
+	sub.x = p.x-q.x;
+	sub.y = p.y-q.y;
+	sub.z = p.z-q.z;
+	return sub;
+}
+
+G308_Point scalarMultiply(G308_Point p, float q){
+	G308_Point z;
+	z.x = p.x*q;
+	z.y = p.y*q;
+	z.z = p.z*q;
+	return z;
+}
+
 quaternion::quaternion(float r, float i, float j, float k) :
 		a(r), b(i), c(j), d(k) {
 }

@@ -115,6 +115,11 @@ void G308_Display()
 		fluidSim->displayFluid();
 	}
 
+	if(displayCollision){
+
+	}
+
+
 //	SpotLight();
 	resetCamera();
 
@@ -218,6 +223,7 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		spotYAngle += 1.0;
 		break;
 	}
+
 	glutPostRedisplay();
 }
 
