@@ -102,7 +102,6 @@ public:
 	float rootRotation;
 	int numBones, selectedBone, selectedAxis;
 	float angle;
-	FrameController *frame_ctrl;
 	//find a bone by name
 	bone* findBone(char*);
 	//constructor destructor
@@ -110,8 +109,6 @@ public:
 	~Skeleton();
 	//draw the skeleton
 	void display();
-	//read amc file
-	void readAMCFile(char*);
 };
 
 

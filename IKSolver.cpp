@@ -29,9 +29,9 @@ IKSolver::IKSolver(Skeleton * robot, bone* root) {
 	//generate child structure by going through bones again
 	//and adding all as per the bone array
 	for (int i = 0; i<NUM_BONES; i++) {
-		bone* current_bone = root[i];
-		for(int j = 0; j<current_bone->numChildren; j++) {
-			B_DATA[i].children[j] = find_IK_Rotation(current_bone->children[j]->id);
+		bone current_bone = root[i];
+		for(int j = 0; j<current_bone.numChildren; j++) {
+			B_DATA[i].children[j] = find_IK_Rotation(current_bone.children[j]->id);
 		}
 	}
 
@@ -54,7 +54,6 @@ quaternion IKSolver::getRotation(int bone_id) {
 			return B_DATA[i].B_ROT;
 		}
 	}
-	return NULL;
 }
 
 /**
@@ -68,7 +67,7 @@ void IKSolver::solveIK(G308_Point end) {
 IK_Rotation* IKSolver::find_IK_Rotation(int bone_id) {
 	for (int i = 0; i<NUM_BONES; i++) {
 		if (B_DATA[i].bone_id == bone_id) {
-			return B_DATA[i].B_ROT;
+			return &B_DATA[i];
 		}
 	}
 	return NULL;
