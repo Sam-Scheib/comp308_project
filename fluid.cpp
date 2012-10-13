@@ -17,8 +17,8 @@
 
 Fluid::Fluid(int row, int col) {
 	wavespeed = 0.02;
-	wallheight = 3.0;
-	groundHeight = -2.0;
+	wallheight = 5.0;
+	slope = -2.0;
 	rows = row;
 	cols = col;
 
@@ -44,6 +44,7 @@ Fluid::Fluid(int row, int col) {
 			totalV += velocities[i][j];
 		}
 	}
+	bowlTerrain();
 	calcluateNormals(ground);
 	generateTerrain();
 	calcluateNormals(heights);
@@ -66,6 +67,37 @@ Fluid::~Fluid() {
 	}
 }
 
+void Fluid::bowlTerrain() {
+	for (int i = 1; i < rows-1; i++) {
+		for (int j = 1; j < cols-1; j++) {
+			if (i < rows/2 && j < cols/2) {
+				if (j < i)
+					ground[i][j] = j/slope+1;
+				else
+					ground[i][j] = i/slope+1;
+			}
+			else if (i < rows/2 && j >= cols/2) {
+				if (cols-1-j < i)
+					ground[i][j] = (cols-1-j)/slope+1;
+				else
+					ground[i][j] = i/slope+1;
+			}
+			else if (i >= rows/2 && j < cols/2) {
+				if (j < rows-1-i)
+					ground[i][j] = j/slope+1;
+				else
+					ground[i][j] = (rows-1-i)/slope+1;
+			}
+			else {
+				if (cols-1-j < rows-1-i)
+					ground[i][j] = (cols-1-j)/slope+1;
+				else
+					ground[i][j] = (rows-1-i)/slope+1;
+			}
+		}
+	}
+}
+
 void Fluid::randomiseHeights() {
 	for (int i = 1; i < rows-1; i++) {
 		for (int j = 1; j < cols-1; j++) {
@@ -73,6 +105,16 @@ void Fluid::randomiseHeights() {
 			velocities[i][j] = 0.0;
 		}
 	}
+}
+
+void Fluid::randomiseTerrain() {
+	for (int i = 1; i < rows-1; i++) {
+		for (int j = 1; j < cols-1; j++) {
+			ground[i][j] = (float)rand() / ((float)RAND_MAX);
+		}
+	}
+	calcluateNormals(ground);
+	generateTerrain();
 }
 
 void Fluid::lowerWater() {
@@ -88,7 +130,19 @@ void Fluid::lowerWater() {
 }
 
 void Fluid::poorWater() {
-	heights[rows/2][cols/2] += 0.5;
+	heights[rows/2][cols/2] += 0.3;
+	heights[rows/2+1][cols/2] += 0.2;
+	heights[rows/2-1][cols/2] += 0.2;
+	heights[rows/2][cols/2+1] += 0.2;
+	heights[rows/2][cols/2-1] += 0.2;
+}
+
+void Fluid::wave() {
+	for (int i = 1; i < cols-1; i++) {
+		velocities[1][i] += 0.2;
+		velocities[2][i] -= 0.1;
+		velocities[3][i] -= 0.1;
+	}
 }
 
 float Fluid::getHeightValue(int x, int y, int selfX, int selfY) {
@@ -121,7 +175,7 @@ void Fluid::calculateSurface() {
 				//velocities[i][j] += ((heights[i-1][j] + heights[i+1][j] + heights[i][j-1] + heights[i][j+1])/4.0 - heights[i][j]) * wavespeed;
 				//printf("velocity of %d,%d is %1.8f\n", i, j, velocities[i][j]);
 				totalV += velocities[i][j];
-				velocities[i][j] *= 0.995;
+				velocities[i][j] *= 0.997;
 				//printf("dampened velocity of %d,%d is %1.8f\n", i, j, velocities[i][j]);
 				//printf("height of %d,%d is %f\n", i, j, heights[i][j]);
 			}
@@ -213,6 +267,9 @@ void Fluid::displayFluid() {
 }
 
 void Fluid::generateTerrain() {
+	if (terrainList != 0)
+		glDeleteLists(terrainList, 1);
+
 	terrainList = glGenLists(1);
 
 	glShadeModel(GL_SMOOTH);

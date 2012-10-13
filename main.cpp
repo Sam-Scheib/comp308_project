@@ -186,12 +186,20 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 	case 'r':
 		fluidSim->randomiseHeights();
 		break;
+	// randomise terrain
+	case 'b':
+		fluidSim->randomiseTerrain();
+		break;
 	case 'f':
 		fluidSim->lowerWater();
 		break;
 	// add water to the centre of the pool
 	case 'p':
 		fluidSim->poorWater();
+		break;
+	// make a wave
+	case 'v':
+		fluidSim->wave();
 		break;
 	//
 	// wasd controls for camera movement
