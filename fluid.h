@@ -16,7 +16,6 @@ private:
 	float** heights;
 	float** velocities;
 	G308_Point** normals;
-	void calculateSurface();
 	void calcluateNormals();
 	void generateTerrain();
 
@@ -24,6 +23,7 @@ public:
 	Fluid(int, int);
 	~Fluid();
 	void randomiseHeights();
+	void calculateSurface();
 	void displayFluid();
 };
 

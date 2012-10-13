@@ -178,16 +178,16 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 	// wasd controls for camera movement
 	//
 	case 'w':
-		zooming(-0.1);
+		zooming(-0.2);
 		break;
 	case 's':
-		zooming(0.1);
+		zooming(0.2);
 		break;
 	case 'a':
-		panning(0.1, 0);
+		panning(0.2, 0);
 		break;
 	case 'd':
-		panning(-0.1, 0);
+		panning(-0.2, 0);
 		break;
 	case 'r':
 		fluidSim->randomiseHeights();
