@@ -6,6 +6,7 @@
  */
 
 #include "IKSolver.h"
+#include "quaternion.h"
 
 IKSolver::IKSolver(Skeleton* robot, bone* root) {
 	//save a pointer to our skeleton robot arm
@@ -60,7 +61,7 @@ int IKSolver::getRotation(int bone_id, quaternion* q) {
 			return 1;
 		}
 	}
-	return NULL;
+	return 0;
 }
 
 /**

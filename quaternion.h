@@ -58,5 +58,7 @@ friend quaternion slerp(const quaternion&, const quaternion&, float);
 
 float dotProduct(G308_Point,G308_Point);
 G308_Point crossProduct(G308_Point,G308_Point);
+G308_Point subtract(G308_Point, G308_Point);
+float vector_length(G308_Point);
 
 #endif
