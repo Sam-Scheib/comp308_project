@@ -42,10 +42,10 @@ private:
 	void applyRotation(GLfloat* matrix, IK_Rotation* bone_data, G308_Point rot_point);
 
 	//calculate a rotation around x/y/z at rot_point that will bring end closest to goal
-	float calculateRotation(G308_Point goal, G308_Point rot_point, G308_Point end);
+	quaternion calculateRotation(G308_Point goal, G308_Point rot_point, G308_Point end);
 
 	//given a bone pointer, find the IK_Rotation that matches that bone's id
-	IK_Rotation* find_IK_Rotation(int bone_id);
+	int find_IK_Rotation(int bone_id, IK_Rotation*);
 
 	//return a vector representing teh vector p rotated by matrix matrix
 	G308_Point getRotatedVector(G308_Point p, float* matrix);

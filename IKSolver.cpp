@@ -22,9 +22,8 @@ IKSolver::IKSolver(Skeleton* robot, bone* root) {
 		B_DATA[i].B_POS.z = 0;
 		//set up the bone_id's for each Bone Data struct
 		B_DATA[i].bone_id = root[i].id;
-		//set up empty quaternions
-		//B_ROTS[i] = quaternion(0, B_POS[1]);
-		//B_ROTS[i] = quaternion(0, B_POS[1]);
+		//null parent link
+		B_DATA[i].parent = NULL;
 	}
 	//generate child structure by going through bones again
 	//and adding all as per the bone array, as well as that
@@ -34,7 +33,8 @@ IKSolver::IKSolver(Skeleton* robot, bone* root) {
 		bone current_bone = root[i];
 		for(int j = 0; j<current_bone.numChildren; j++) {
 			B_DATA[i].num_children = current_bone.numChildren;
-			IK_Rotation* child = find_IK_Rotation(current_bone.children[j]->id);
+			IK_Rotation* child;
+			find_IK_Rotation(current_bone.children[j]->id, child);
 			B_DATA[i].children[j] = child;
 			child->parent = &B_DATA[i];
 		}
@@ -68,17 +68,36 @@ int IKSolver::getRotation(int bone_id, quaternion* q) {
  */
 void IKSolver::solveIK(G308_Point goal, bone* end_effector) {
 	//
-	IK_Rotation* bone_data = find_IK_Rotation(end_effector->id);
-	float angle = calculateRotation(goal, bone_data->parent->B_POS, bone_data->B_POS);
+	IK_Rotation* bone_data;
+	find_IK_Rotation(end_effector->id, bone_data);
+	IK_Rotation* cur_rot_point = bone_data;
+	quaternion angle;
+	//if our cur_rot_point has a parent
+	while(cur_rot_point->parent!=NULL) {
+		//set the cur_rot_point to the parent
+		cur_rot_point = cur_rot_point->parent;
+		//find an angle of rotationg around cur_rot_points position that brings
+		//end effector closest to our goal
+		angle = calculateRotation(goal, cur_rot_point->B_POS, bone_data->B_POS);
+		GLfloat m[16];
+		angle.toMatrix(m);
+		//apply this rotation around cur_rot_point to cur_rot_point and all of the
+		//children of cur_rot_point
+		applyRotation(m, cur_rot_point, cur_rot_point->B_POS);
+		//check how far end_effector is from our goal
+		float dist = vector_length(subtract(goal, bone_data->B_POS));
+	}
 }
 
 //Private Methods:
-IK_Rotation* IKSolver::find_IK_Rotation(int bone_id) {
+int IKSolver::find_IK_Rotation(int bone_id, IK_Rotation* result) {
 	for (int i = 0; i<NUM_BONES; i++) {
 		if (B_DATA[i].bone_id == bone_id) {
-			return &B_DATA[i];
+			result = &B_DATA[i];
+			return 1;
 		}
 	}
+	return NULL;
 }
 /**
  * take a rotation matrix and the current bone id and update
@@ -105,8 +124,8 @@ void IKSolver::applyRotation(GLfloat* matrix, IK_Rotation* bone_data, G308_Point
  * Find a rotation around rot point that brings the end point as close as possible
  * to the goal point
  */
-float IKSolver::calculateRotation(G308_Point goal, G308_Point rot_point, G308_Point end) {
-	return 0.0;
+quaternion IKSolver::calculateRotation(G308_Point goal, G308_Point rot_point, G308_Point end) {
+	return quaternion(0, 0, 0, 0);
 }
 
 /**
