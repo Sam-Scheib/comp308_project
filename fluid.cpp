@@ -15,6 +15,10 @@
 #include <time.h>
 #include "quaternion.h"
 
+//static char* fragShader = "void main() {\
+//		gl_FragColor = vec4(1,0.5,0,1); \
+//		}";
+
 Fluid::Fluid(int row, int col) {
 	wavespeed = 0.02;
 	wallheight = 5.0;
@@ -40,7 +44,7 @@ Fluid::Fluid(int row, int col) {
 			ground[i][j] = (float)rand() / ((float)RAND_MAX);
 			normals[i][j] = {0.0, 0.0, 0.0};
 			//heights[i][j] = (float)i/row + (float)j/col;
-			printf("height of %d,%d is %f\n", i, j, heights[i][j]);
+			//printf("height of %d,%d is %f\n", i, j, heights[i][j]);
 			//printf("velocity of %d,%d is %1.8f\n", i, j, velocities[i][j]);
 			totalV += velocities[i][j];
 		}
@@ -223,7 +227,22 @@ void Fluid::calcluateNormals(float** values) {
 	}
 }
 
+void Fluid::glInit() {
+	if (!glInited) {
+		from = new FBO();
+		from->size = 256;
+		from->glInit();
+		to = new FBO();
+		to->size = 256;
+		to->glInit();
+		//shader = new ShaderProgram(Shader(fragShader, GL_FRAGMENT_SHADER));
+		glInited = true;
+	}
+}
+
 void Fluid::displayFluid() {
+
+	//shader->enable();
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();

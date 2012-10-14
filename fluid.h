@@ -6,6 +6,8 @@
  *
  */
 #include "define.h"
+#include "shader.h"
+#include "FBO.h"
 
 class Fluid {
 
@@ -17,12 +19,16 @@ private:
 	float** ground;
 	float** velocities;
 	G308_Point** normals;
+	ShaderProgram* shader;
+	FBO *from, *to;
 	void calcluateNormals(float**);
 	void generateTerrain();
 	void bowlTerrain();
 	float getHeightValue(int, int, int, int);
 
 public:
+	bool glInited;
+	void glInit();
 	Fluid(int, int);
 	~Fluid();
 	void randomiseHeights();

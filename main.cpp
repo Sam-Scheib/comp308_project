@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <GL/glew.h>
 #include <GL/glut.h>
 #include <math.h>
 
@@ -80,6 +81,9 @@ int main(int argc, char** argv)
     glutInitWindowSize(g_nWinWidth, g_nWinHeight);
     g_mainWnd = glutCreateWindow("COMP308 Assignment1");
 
+    int error = glewInit();
+    if (GLEW_OK != error)
+    	printf("error is: %s\n", glewGetErrorString(error));
     glutDisplayFunc(G308_Display);
     glutReshapeFunc(G308_Reshape);
     glutKeyboardFunc(G308_keyboardListener);
@@ -89,7 +93,7 @@ int main(int argc, char** argv)
 
 	// Add individual modules here
 	if (displayFluid) {
-		fluidSim = new Fluid(50, 50);
+		fluidSim = new Fluid(100, 100);
 	}
 	if (displayRobot) {
 		//pass for now
@@ -123,6 +127,7 @@ void G308_Display()
 
 	// Call indivudal display methods here
 	if (displayFluid) {
+		fluidSim->glInit();
 		if (waterFlowing)
 			fluidSim->calculateSurface();
 		fluidSim->displayFluid();
