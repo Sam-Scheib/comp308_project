@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <GL/glew.h>
 #include <GL/glut.h>
 #include <math.h>
 
@@ -24,6 +25,9 @@
 #include "quaternion.h"
 #include "imageLoader.h"
 #include "fluid.h"
+
+//defines for ik
+#include "G308_Skeleton.h"
 
 // Global variables
 GLuint g_mainWnd;
@@ -49,6 +53,11 @@ int mouseX, mouseY;
 Fluid* fluidSim;
 bool displayFluid = true, waterFlowing = false;
 
+//Francis ~IK stuff
+bool displayRobot = true;//draw robot arms
+bool calculateIK = false;//calculate ik values
+Skeleton* robot;//pointer to our robot arm, will become a vector at some point
+
 void G308_keyboardListener(unsigned char, int, int);
 void G308_mouseListener(int, int, int, int);
 void G308_mouseMovement(int, int);
@@ -72,6 +81,9 @@ int main(int argc, char** argv)
     glutInitWindowSize(g_nWinWidth, g_nWinHeight);
     g_mainWnd = glutCreateWindow("COMP308 Assignment1");
 
+    int error = glewInit();
+    if (GLEW_OK != error)
+    	printf("error is: %s\n", glewGetErrorString(error));
     glutDisplayFunc(G308_Display);
     glutReshapeFunc(G308_Reshape);
     glutKeyboardFunc(G308_keyboardListener);
@@ -81,7 +93,10 @@ int main(int argc, char** argv)
 
 	// Add individual modules here
 	if (displayFluid) {
-		fluidSim = new Fluid(30, 30);
+		fluidSim = new Fluid(100, 100);
+	}
+	if (displayRobot) {
+		//pass for now
 	}
 
 
@@ -112,6 +127,7 @@ void G308_Display()
 
 	// Call indivudal display methods here
 	if (displayFluid) {
+		fluidSim->glInit();
 		if (waterFlowing)
 			fluidSim->calculateSurface();
 		fluidSim->displayFluid();
@@ -178,13 +194,17 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 	case 'x':
 		waterFlowing = !waterFlowing;
 		break;
+	// flatten the terrain
 	case 't':
-		rotation += 2;
-		//printf("rotation is %d\n", rotation);
+		fluidSim->flattenTerrain();
 		break;
 	// randomise the heights of the water
 	case 'r':
 		fluidSim->randomiseHeights();
+		break;
+	// randomise terrain
+	case 'b':
+		fluidSim->randomiseTerrain();
 		break;
 	case 'f':
 		fluidSim->lowerWater();
@@ -192,6 +212,10 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 	// add water to the centre of the pool
 	case 'p':
 		fluidSim->poorWater();
+		break;
+	// make a wave
+	case 'v':
+		fluidSim->wave();
 		break;
 	//
 	// wasd controls for camera movement
