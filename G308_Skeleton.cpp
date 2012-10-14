@@ -538,9 +538,7 @@ void Skeleton::readBone(char* buff, FILE* file) {
 						printf("Got: %s", p);
 						exit(EXIT_FAILURE);
 					}
-					//		root[numBones].rotx = x;
-					//		root[numBones].roty = y;
-					//		root[numBones].rotz = z;
+					//generate a quaternion rotation for the axis offsets
 					G308_Point t;
 					t.x = 1;
 					t.y = 0;
@@ -561,6 +559,7 @@ void Skeleton::readBone(char* buff, FILE* file) {
 					root[numBones].rotation= complete;
 				}
 				//There are more things but they are not needed for the core
+				//TODO read angle constraints for axes
 			}
 
 		}

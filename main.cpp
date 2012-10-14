@@ -92,7 +92,7 @@ int main(int argc, char** argv)
 		fluidSim = new Fluid(50, 50);
 	}
 	if (displayRobot) {
-
+		//pass for now
 	}
 
 
