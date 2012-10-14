@@ -59,6 +59,16 @@ G308_Point scalarMultiply(G308_Point p, float q){
 	return z;
 }
 
+float vector_length(G308_Point vector) {
+	G308_Point squared;
+	float x = vector.x * vector.x;
+	float y = vector.y * vector.y;
+	float z = vector.z*vector.z;
+	float result = x+y+z;
+	result = sqrt(result);
+	return result;
+}
+
 quaternion::quaternion(float r, float i, float j, float k) :
 		a(r), b(i), c(j), d(k) {
 }
