@@ -233,13 +233,13 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		panning(-0.2, 0);
 		break;
 
-	case 'f':
+//	case 'f':
 
 		//Reserved, Fires balls
-		break;
-	case 'b':
+	//	break;
+//	case 'b':
 		//Reserved, spawns many balls, more than you have.
-		break;
+	//	break;
 
 	// Old lighting controls
 	case 'e':

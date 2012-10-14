@@ -2,7 +2,7 @@ CC = g++
 LPATH = -L/usr/pkg/lib
 LDPATH = -Wl,-R/usr/pkg/lib 
 CFLAGS=-g -Wall -Wextra -pedantic
-LIBS=-lGL -lglut -lGLU -ljpeg -lm -lGLEW -lpng12
+LIBS=-lGL -lglut -lGLU -ljpeg -lm -lGLEW -lpng15
 IPATH= -I/usr/pkg/include
 
 all: Project

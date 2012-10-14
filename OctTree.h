@@ -8,7 +8,7 @@
 #ifndef OCTTREE_H_
 #define OCTTREE_H_
 
-namespace std {
+
 
 class OctTree {
 public:
@@ -34,5 +34,4 @@ public:
 
 };
 
-} /* namespace std */
-#endif /* OCTTREE_H_ */
+
