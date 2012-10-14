@@ -84,6 +84,15 @@ float r = radi*2;
 
 bool ball::collideNormal(G308_Point* normal){
 
+	float length = sqrt((normal->x*normal->x)+(normal->x*normal->x)+(normal->x*normal->x));
+		G308_Point normaldist = scalarMultiply(*normal,(1/length));
+		float dotprod = dotProduct(velocity,normaldist);
+		G308_Point normVelocity = scalarMultiply(normaldist,2);
+		normVelocity = scalarMultiply(normVelocity,dotprod);
+
+		velocity = subtract(velocity,normVelocity);
+
+
 
 	return true;
 }
