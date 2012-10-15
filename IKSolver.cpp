@@ -120,7 +120,7 @@ void IKSolver::applyRotation(GLfloat* matrix, IK_Rotation* bone_data, G308_Point
 	G308_Point line = {pos.x-rot_point.x, pos.y - rot_point.y, pos.z - rot_point.z};
 	//apply rotation to the line
 	line = getRotatedVector(line, matrix);
-	//find new pos
+	//find new end position
 	pos = {rot_point.x+line.x, rot_point.y+line.y, rot_point.z+line.z};
 	//update stored position
 	bone_data->B_POS = pos;
@@ -135,12 +135,28 @@ void IKSolver::applyRotation(GLfloat* matrix, IK_Rotation* bone_data, G308_Point
  * to the goal point
  */
 quaternion IKSolver::calculateRotation(G308_Point goal, G308_Point rot_point, G308_Point end) {
-	return quaternion(0, 0, 0, 0);
-	//this has to be done for rot around x, rot around y and rot around z
-	//start with x
-	G308_Point x_axis = {1, 0, 0};
+	//we are currently doing this without thinking about dof and angle constraints
+	//vector from rotation point to goal point
+	G308_Point goal_rot = subtract(goal, rot_point);
+	//vector from rotation point to end effector
+	G308_Point rot_end = subtract(end, rot_point);
 
-	quaternion x = quaternion(0, 0, 0, 0);
+	//angle and axis thats being rotated around
+	float angle;
+	G308_Point axis;
+
+	//top half of formulae = goal_rot (dot) rot_end
+	float top = dotProduct(goal_rot, rot_end);
+	//bottom half of formulae = |goal_rot| * |rot_end|
+	float bottom = vector_length(goal_rot) * vector_length(rot_end);
+	//angle is the inverse cos of top divided by bottom
+	angle = acos(top/bottom);
+	//axis is the vector at right angles to both other vectors
+	axis = crossProduct(goal_rot, rot_end);
+
+	//return the quaternion representing this rotation
+	return quaternion(angle, axis);
+
 }
 
 /**
