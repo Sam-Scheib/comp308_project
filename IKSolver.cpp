@@ -13,6 +13,9 @@ IKSolver::IKSolver(Skeleton* robot, bone* root) {
 	ROBOT = robot;
 	NUM_BONES = ROBOT->numBones;
 
+	//Delta of distance to the end point to finish on
+	DIST_DELTA = 0.1f;
+
 	//Initialise our Bone_Data array
 	B_DATA = (IK_Rotation*) malloc(sizeof(IK_Rotation) * NUM_BONES);
 
@@ -87,7 +90,12 @@ void IKSolver::solveIK(G308_Point goal, bone* end_effector) {
 		applyRotation(m, cur_rot_point, cur_rot_point->B_POS);
 		//check how far end_effector is from our goal
 		float dist = vector_length(subtract(goal, bone_data->B_POS));
+		if(dist < DIST_DELTA) {
+			//if we are within distance we break the loop
+			break;
+		}
 	}
+	//iteration completed
 }
 
 //Private Methods:
@@ -98,7 +106,7 @@ int IKSolver::find_IK_Rotation(int bone_id, IK_Rotation* result) {
 			return 1;
 		}
 	}
-	return NULL;
+	return 0;
 }
 /**
  * take a rotation matrix and the current bone id and update
@@ -127,6 +135,11 @@ void IKSolver::applyRotation(GLfloat* matrix, IK_Rotation* bone_data, G308_Point
  */
 quaternion IKSolver::calculateRotation(G308_Point goal, G308_Point rot_point, G308_Point end) {
 	return quaternion(0, 0, 0, 0);
+	//this has to be done for rot around x, rot around y and rot around z
+	//start with x
+	G308_Point x_axis = {1, 0, 0};
+
+	quaternion x = quaternion(0, 0, 0, 0);
 }
 
 /**

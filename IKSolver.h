@@ -25,7 +25,8 @@ struct IK_Rotation {
 class IKSolver {
 private:
 	//Variables:
-
+	//distance delta
+	float DIST_DELTA;
 	//Pointer to robot skeleton
 	Skeleton* ROBOT;
 

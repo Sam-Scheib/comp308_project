@@ -60,7 +60,6 @@ G308_Point scalarMultiply(G308_Point p, float q){
 }
 
 float vector_length(G308_Point vector) {
-	G308_Point squared;
 	float x = vector.x * vector.x;
 	float y = vector.y * vector.y;
 	float z = vector.z*vector.z;
