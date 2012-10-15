@@ -14,7 +14,7 @@ class Fluid {
 private:
 	int rows, cols, count;
 	int terrainList;
-	float wavespeed, slope, wallheight, groundheight;
+	float wavespeed, slope, wallheight, groundheight, waterheight;
 	float** heights;
 	float** ground;
 	float** velocities;
@@ -25,6 +25,7 @@ private:
 	void generateTerrain();
 	void bowlTerrain();
 	float getHeightValue(int, int, int, int);
+	void checkGroundHit(int, int);
 
 public:
 	bool glInited;
