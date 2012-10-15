@@ -15,6 +15,7 @@
 //
 //---------------------------------------------------------------------------
 
+#include <stdlib.h>
 #include "G308_Skeleton.h"
 #include <GL/glut.h>
 #include <math.h>

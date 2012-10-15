@@ -5,6 +5,7 @@
  *      Author: francis
  */
 
+#include <stdlib.h>
 #include "IKSolver.h"
 #include "quaternion.h"
 

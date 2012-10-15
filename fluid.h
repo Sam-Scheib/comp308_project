@@ -6,23 +6,30 @@
  *
  */
 #include "define.h"
+#include "shader.h"
+#include "FBO.h"
 
 class Fluid {
 
 private:
 	int rows, cols, count;
 	int terrainList;
-	float wavespeed, slope, wallheight, groundheight;
+	float wavespeed, slope, wallheight, groundheight, waterheight;
 	float** heights;
 	float** ground;
 	float** velocities;
 	G308_Point** normals;
+	ShaderProgram* shader;
+	FBO *from, *to;
 	void calcluateNormals(float**);
 	void generateTerrain();
 	void bowlTerrain();
 	float getHeightValue(int, int, int, int);
+	void checkGroundHit(int, int);
 
 public:
+	bool glInited;
+	void glInit();
 	Fluid(int, int);
 	~Fluid();
 	void randomiseHeights();

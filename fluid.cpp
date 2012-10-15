@@ -15,10 +15,15 @@
 #include <time.h>
 #include "quaternion.h"
 
+//static char* fragShader = "void main() {\
+//		gl_FragColor = vec4(1,0.5,0,1); \
+//		}";
+
 Fluid::Fluid(int row, int col) {
-	wavespeed = 0.02;
-	wallheight = 5.0;
+	wavespeed = 0.2;
+	wallheight = 6.0;
 	groundheight = 0.0;
+	waterheight = 3.0;
 	slope = -2.0;
 	rows = row;
 	cols = col;
@@ -36,11 +41,11 @@ Fluid::Fluid(int row, int col) {
 		velocities[i] = (float*) calloc(col, sizeof(float));
 		normals[i] = (G308_Point*) calloc(col, sizeof(G308_Point));
 		for (int j = 0; j < col; j++) {
-			heights[i][j] = 1.8; //(float)rand() / ((float)RAND_MAX/2) - 1.0; // Random height values
+			heights[i][j] = waterheight; //(float)rand() / ((float)RAND_MAX/2) - 1.0; // Random height values
 			ground[i][j] = (float)rand() / ((float)RAND_MAX);
 			normals[i][j] = {0.0, 0.0, 0.0};
 			//heights[i][j] = (float)i/row + (float)j/col;
-			printf("height of %d,%d is %f\n", i, j, heights[i][j]);
+			//printf("height of %d,%d is %f\n", i, j, heights[i][j]);
 			//printf("velocity of %d,%d is %1.8f\n", i, j, velocities[i][j]);
 			totalV += velocities[i][j];
 		}
@@ -102,7 +107,7 @@ void Fluid::bowlTerrain() {
 void Fluid::randomiseHeights() {
 	for (int i = 1; i < rows-1; i++) {
 		for (int j = 1; j < cols-1; j++) {
-			heights[i][j] = (float)rand() / ((float)RAND_MAX) + 1.0;
+			heights[i][j] = (float)rand() / ((float)RAND_MAX) -0.5 + waterheight;
 			velocities[i][j] = 0.0;
 		}
 	}
@@ -132,27 +137,40 @@ void Fluid::lowerWater() {
 	for (int i = 1; i < rows-1; i++) {
 		for (int j = 1; j < cols-1; j++) {
 			heights[i][j] -= 0.1;
-			if (heights[i][j] < ground[i][j]) {
-				heights[i][j] = ground[i][j];
-				velocities[i][j] = 0.0;
-			}
+			checkGroundHit(i,j);
 		}
 	}
 }
 
 void Fluid::poorWater() {
-	heights[rows/2][cols/2] += 0.3;
-	heights[rows/2+1][cols/2] += 0.2;
-	heights[rows/2-1][cols/2] += 0.2;
-	heights[rows/2][cols/2+1] += 0.2;
-	heights[rows/2][cols/2-1] += 0.2;
+	velocities[rows/2][cols/2] += 0.3;
+	velocities[rows/2+1][cols/2] += 0.1;
+	velocities[rows/2-1][cols/2] += 0.1;
+	velocities[rows/2][cols/2+1] += 0.1;
+	velocities[rows/2][cols/2-1] += 0.1;
 }
 
 void Fluid::wave() {
-	for (int i = 1; i < cols-1; i++) {
-		velocities[1][i] += 0.2;
-		velocities[2][i] -= 0.1;
-		velocities[3][i] -= 0.1;
+	for (int i = 0; i < cols-1; i++) {
+		velocities[rows/2][i] += 0.2;
+		velocities[rows/2+1][i] += 0.1;
+		velocities[rows/2-1][i] += 0.1;
+		velocities[rows/2+2][i] -= 0.1;
+		velocities[rows/2-2][i] -= 0.1;
+		velocities[rows/2+3][i] -= 0.1;
+		velocities[rows/2-3][i] -= 0.1;
+	}
+}
+
+void Fluid::checkGroundHit(int x, int y) {
+	if (heights[x][y] < ground[x][y]) {
+		float heightDiff =  ground[x][y] - heights[x][y];
+//		velocities[x+1][y] -= velocities[x][y]/4;
+//		velocities[x-1][y] -= velocities[x][y]/4;
+//		velocities[x][y+1] -= velocities[x][y]/4;
+//		velocities[x][y-1] -= velocities[x][y]/4;
+		heights[x][y] = ground[x][y];
+		velocities[x][y] = 0.0;
 	}
 }
 
@@ -195,10 +213,7 @@ void Fluid::calculateSurface() {
 	for (int i = 1; i < rows-1; i++) {
 		for (int j = 1; j < cols-1; j++) {
 			heights[i][j] += velocities[i][j];
-			if (heights[i][j] < ground[i][j]) {
-				heights[i][j] = ground[i][j];
-				velocities[i][j] = 0.0;
-			}
+			checkGroundHit(i,j);
 		}
 	}
 	calcluateNormals(heights);
@@ -223,11 +238,26 @@ void Fluid::calcluateNormals(float** values) {
 	}
 }
 
+void Fluid::glInit() {
+	if (!glInited) {
+		from = new FBO();
+		from->size = 256;
+		from->glInit();
+		to = new FBO();
+		to->size = 256;
+		to->glInit();
+		//shader = new ShaderProgram(Shader(fragShader, GL_FRAGMENT_SHADER));
+		glInited = true;
+	}
+}
+
 void Fluid::displayFluid() {
+
+	//shader->enable();
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	glTranslatef(-4.0, -2.0, -30.0);
+	glTranslatef(-rows/2.0, -wallheight/0.2, -cols/2.0);
 
 	glCallList(terrainList);
 
