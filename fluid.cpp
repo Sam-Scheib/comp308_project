@@ -217,7 +217,7 @@ void Fluid::calculateSurface() {
 		}
 	}
 	calcluateNormals(heights);
-	printf("sum of velocity is %f\n", totalV);
+	//printf("sum of velocity is %f\n", totalV);
 }
 
 void Fluid::calcluateNormals(float** values) {
