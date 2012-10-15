@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <fstream>
 #include "define.h"
-#include "frame_controller.h"
 
 using namespace std;
 
@@ -58,6 +57,39 @@ Skeleton::Skeleton(char* filename) {
 	root[0].name = name;
 	root[0].dof = DOF_ROOT;
 	readASF(filename);
+	//generate intial positions
+	calculatePositions(root);
+	NUM_BONES = ROBOT->numBones;
+
+	//Delta of distance to the end point to finish on
+	DIST_DELTA = 0.1f;
+
+	//Initialise our Bone_Data array
+	B_DATA = (IK_Rotation*) malloc(sizeof(IK_Rotation) * NUM_BONES);
+
+	for (int i = 0; i<NUM_BONES; i++) {
+		//zero Bone position for each Bone Data struct
+		B_DATA[i].B_POS = root[i].pos;
+		//set up the bone_id's for each Bone Data struct
+		B_DATA[i].bone_id = root[i].id;
+		//null parent link
+		B_DATA[i].parent = NULL;
+	}
+	//generate child structure by going through bones again
+	//and adding all as per the bone array, as well as that
+	//make sure each child has a link to it's parent as IK works
+	//backwards
+	for (int i = 0; i<NUM_BONES; i++) {
+		bone current_bone = root[i];
+		for(int j = 0; j<current_bone.numChildren; j++) {
+			B_DATA[i].num_children = current_bone.numChildren;
+			IK_Rotation* child;
+			find_IK_Rotation(current_bone.children[j]->id, child);
+			B_DATA[i].children[j] = child;
+			child->parent = &B_DATA[i];
+		}
+	}
+
 }
 
 Skeleton::~Skeleton() {
@@ -77,6 +109,45 @@ void Skeleton::deleteBones(bone* root) {
 	free(root);
 }
 
+/**
+ * Like a draw but doesn't actually display anything, just calculates the position
+ * of each bone at this point in time
+ */
+void Skeleton::calculatePositions(bone* currentBone) {
+	if (currentBone == NULL) {
+		return;
+	}
+	//YOUR CODE GOES HERE
+	//first align local axis
+	glPushMatrix();
+	GLfloat *f;
+	root->rotation.toMatrix(f);
+	glMultMatrixf(f);
+
+	//if any animations are loaded we should apply the
+	//rotations and translations to each bone here
+	updateAnimation(currentBone);
+
+	//undo axis transforms as they are not
+	//applied to bone drawing or translations
+	root->rotation.multiplicativeInverse().toMatrix(f);
+	glMultMatrixf(f);
+
+	//save our position at this point
+	 glGetFloatv(GL_MODELVIEW_MATRIX, f);
+	 //f now has the state of the model view
+	 currentBone->pos = {f[12], f[13], f[14]};
+	//translate to new location from current
+	glTranslatef(currentBone->dir.x*currentBone->length, currentBone->dir.y*currentBone->length, currentBone->dir.z*currentBone->length);
+
+	//draw children at updated position
+	//it's important to note that any rotations made earlier that are not explicitly
+	//undone will be passed on to children
+	for (int i=0;i<currentBone->numChildren; i++) {
+		calculatePositions(currentBone->children[i]);
+	}
+	glPopMatrix();
+}
 // [Assignment2] you may need to revise this function
 void Skeleton::display() {
 	if (root == NULL) {
@@ -246,7 +317,7 @@ void Skeleton::updateAnimation(bone* current) {
 	GLfloat f[16];
 	int id = current->id;
 	//m_Postures[frame_ctrl->current_frame()].bone_rot_q[current->id].toMatrix(f);
-	glMultMatrixf(f);
+	//glMultMatrixf(f);
 	//rotate by mouse and camera amounts
 	//glRotatef(currentZ, 0, 0, 1);
 	//glRotatef(currentY, 0, 1, 0);
@@ -265,20 +336,141 @@ bone* Skeleton::findBone(char * name) {
 	printf("Couldn't find a bone matching %s\n", name);
 	exit(EXIT_FAILURE);
 }
+/*
+ * IK METHODS BELOW THIS POINT
+ */
 
-void Skeleton::setDefaultPostures(void) {
-	//TODO this won't be used, but it will provide me
-	//syntax on how to set up postures array!
-	for (int frame = 0; frame<m_numFrames; frame++) {
-		//set root position to (0,0,0)
-		m_Postures[frame].root_pos.x = 0;
-		m_Postures[frame].root_pos.y = 0;
-		m_Postures[frame].root_pos.z = 0;
-		for (int i =0; i<256; i++) {
-			m_Postures[frame].bone_rotation[i] = G308_Point();
-			m_Postures[frame].bone_rot_q[i] = quaternion(0, 0, 0, 0);
+//Public Methods:
+
+/**
+ * Get the rotation for the bone given by the bone_id
+ */
+int Skeleton::getRotation(int bone_id, quaternion* q) {
+	for (int i = 0; i<NUM_BONES; i++) {
+		if (B_DATA[i].bone_id == bone_id) {
+			q =  &B_DATA[i].B_ROT;
+			return 1;
 		}
 	}
+	return 0;
+}
+
+/**
+ * Attempt to generate a solution for the given end point
+ */
+void Skeleton::solveIK(G308_Point goal, bone* end_effector) {
+	IK_Rotation* bone_data;
+	find_IK_Rotation(end_effector->id, bone_data);
+	IK_Rotation* cur_rot_point = bone_data;
+	quaternion angle;
+	bool complete = false;
+	int i = 0;
+	//we run over some set of max iterations
+	while( i<MAX_IK_RUNS && complete) {
+		//if our cur_rot_point has a parent
+		while(cur_rot_point->parent!=NULL && complete) {
+			//set the cur_rot_point to the parent
+			cur_rot_point = cur_rot_point->parent;
+			//find an angle of rotation around cur_rot_points position that brings
+			//end effector closest to our goal
+			angle = calculateRotation(goal, cur_rot_point->B_POS, bone_data->B_POS);
+			GLfloat m[16];
+			angle.toMatrix(m);
+			//apply this rotation around cur_rot_point to cur_rot_point and all of the
+			//children of cur_rot_point
+			applyRotation(m, cur_rot_point, cur_rot_point->B_POS);
+			//check how far end_effector is from our goal
+			float dist = vector_length(subtract(goal, bone_data->B_POS));
+			if(dist < DIST_DELTA) {
+				//if we are within distance we break the loop
+				complete = true;
+			}
+		}
+		i++;
+	}
+	//iteration completed
+}
+
+//Private Methods:
+int Skeleton::find_IK_Rotation(int bone_id, IK_Rotation* result) {
+	for (int i = 0; i<NUM_BONES; i++) {
+		if (B_DATA[i].bone_id == bone_id) {
+			result = &B_DATA[i];
+			return 1;
+		}
+	}
+	return 0;
+}
+/**
+ * take a rotation matrix and the current bone id and update
+ * it and all it's children's positions by rotating them around the rot point
+ * by the rotation matrix
+ */
+void Skeleton::applyRotation(GLfloat* matrix, IK_Rotation* bone_data, G308_Point rot_point) {
+	G308_Point pos = bone_data->B_POS;
+	//find the vector line between pos and rot_point
+	G308_Point line = {pos.x-rot_point.x, pos.y - rot_point.y, pos.z - rot_point.z};
+	//apply rotation to the line
+	line = getRotatedVector(line, matrix);
+	//find new end position
+	pos = {rot_point.x+line.x, rot_point.y+line.y, rot_point.z+line.z};
+	//update stored position
+	bone_data->B_POS = pos;
+	//repeat for all children
+	for (int i = 0; i<bone_data->num_children; i++) {
+		applyRotation(matrix, bone_data->children[i], rot_point);
+	}
+}
+
+/**
+ * Find a rotation around rot point that brings the end point as close as possible
+ * to the goal point
+ */
+quaternion Skeleton::calculateRotation(G308_Point goal, G308_Point rot_point, G308_Point end) {
+	//we are currently doing this without thinking about DOF constraints
+	//vector from rotation point to goal point
+	G308_Point goal_rot = subtract(goal, rot_point);
+	//vector from rotation point to end effector
+	G308_Point rot_end = subtract(end, rot_point);
+
+	//angle and axis thats being rotated around
+	float angle;
+	G308_Point axis;
+
+	goal_rot = normalise(goal_rot);
+	rot_end = normalise(rot_end);
+	//find dot of normalised vectors
+	angle = dotProduct(goal_rot, rot_end);
+	//angle is the inverse cos
+	angle = acos(angle);
+	//axis is the vector at right angles to both other vectors
+	axis = crossProduct(goal_rot, rot_end);
+	axis = normalise(axis);
+
+	//return the quaternion representing this rotation
+	return quaternion(angle, axis);
+
+}
+
+/**
+ * Return a vector that represents the vector p rotated by
+ * the rotation matrix matrix. this is a dup of a function
+ * in main but I couldnt' be bothered putting them in a good place
+ */
+G308_Point Skeleton::getRotatedVector(G308_Point p, float* matrix) {
+
+	G308_Point newPoint = {
+			p.x * matrix[0] + p.y * matrix[4] + p.z * matrix[8] + matrix[12],
+			p.x * matrix[1] + p.y * matrix[5] + p.z * matrix[9] + matrix[13],
+			p.x * matrix[2] + p.y * matrix[6] + p.z * matrix[10] + matrix[14]
+	};
+	return newPoint;
+}
+
+G308_Point Skeleton::normalise(G308_Point temp) {
+	float l = sqrt(temp.x * temp.x + temp.y * temp.y + temp.z * temp.z);
+	temp = {temp.x/l, temp.y/l, temp.z/l};
+	return temp;
 }
 
 /**
@@ -560,7 +752,6 @@ void Skeleton::readBone(char* buff, FILE* file) {
 					root[numBones].rotation= complete;
 				}
 				//There are more things but they are not needed for the core
-				//TODO read angle constraints for axes
 			}
 
 		}

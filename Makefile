@@ -2,11 +2,11 @@ CC = g++
 LPATH = -L/usr/pkg/lib
 LDPATH = -Wl,-R/usr/pkg/lib 
 CFLAGS=-g -Wall -Wextra -pedantic
-LIBS=-lGL -lglut -lGLU -ljpeg -lm -lGLEW -lpng15
+LIBS=-lGL -lglut -lGLU -ljpeg -lm -lGLEW -lpng
 IPATH= -I/usr/pkg/include
 
 all: Project
-Project : main.o quaternion.o fluid.o shader.o FBO.o imageLoader.o ball.o G308_Skeleton.o IKSolver.o
+Project : main.o quaternion.o fluid.o shader.o FBO.o imageLoader.o ball.o G308_Skeleton.o
 	$(CC) -o $@ $^ $(LIBS) $(LPATH) $(LDPATH)
 .cpp.o: 
 	$(CC) $(CFLAGS) -c -o $@ $^ $(IPATH)
