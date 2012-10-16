@@ -27,7 +27,18 @@ OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize) {
 	depth = currentLevel;
 	botleft = bottomleftCorner;
 	size = isize;
+	if (depth == 0) {
+		rootnode == this;
+	}
 
+}
+
+OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize,
+		OctTree* rootnodea) {
+	depth = currentLevel;
+	botleft = bottomleftCorner;
+	size = isize;
+	rootnode = rootnodea;
 }
 /*
  * Add To the oct tree, seeing if we have children, If we Have no children we just add the object.
@@ -42,7 +53,13 @@ void OctTree::add(ball* ball) {
 		ballNumber++;
 
 		balls.insert(ball);
+		if (ballNumber > MAX_OBJ_PERTREE) {
+			splitSelf();
+		}
 	}
+
+}
+void OctTree::renderTree() {
 
 }
 
@@ -134,6 +151,7 @@ void OctTree::remove(ball* ball) {
 		ballNumber--;
 
 		balls.erase(ball);
+
 	}
 
 }
@@ -149,12 +167,13 @@ void OctTree::pullballsfromChildren() {
 
 				} else {
 					children[x][y][z]->removeChildren();
-					if(children[x][y][z]->childrenpresent==false){
-					balls.insert(children[x][y][z]->balls.begin(),children[x][y][z]->balls.end());
-					}else{
-				//		printf("Something broke in pullballs \n");
+					if (children[x][y][z]->childrenpresent == false) {
+						balls.insert(children[x][y][z]->balls.begin(),
+								children[x][y][z]->balls.end());
+					} else {
+						//		printf("Something broke in pullballs \n");
 					}
-					}
+				}
 			}
 		}
 	}
@@ -174,12 +193,40 @@ void OctTree::removeChildren() {
 	childrenpresent = false;
 
 }
-void OctTree::performCollisions(){
+void OctTree::performCollisions() {
+
+	if (childrenpresent) {
+		for (int x = 0; x < 2; x++) {
+			for (int y = 0; y < 2; y++) {
+				for (int z = 0; z < 2; z++) {
+					children[x][y][z]->performCollisions();
+				}
+			}
+		}
+	} else {
+
+		for (set<ball*>::iterator iter = balls.begin(); iter != balls.end();) {
+			for (set<ball*>::iterator rator = balls.begin();
+					rator != balls.end();) {
+				if (iter == rator) {
+					//skip
+				} else {
+					//Test Collision / enact collision with your patner
+					ball* b1 = *iter;
+					ball* b2 = *rator;
+					if(b1->ballwillcollide(b2)){
+					b1->collision(b2);}
+
+				}
+			}
+		}
+
+	}
 
 }
 
-void OctTree::moveBalls(){
-	if(childrenpresent){
+void OctTree::moveBalls() {
+	if (childrenpresent) {
 		for (int x = 0; x < 2; x++) {
 			for (int y = 0; y < 2; y++) {
 				for (int z = 0; z < 2; z++) {
@@ -188,8 +235,15 @@ void OctTree::moveBalls(){
 			}
 		}
 
-	}else{
+	} else {
+		for (set<ball*>::iterator iter = balls.begin(); iter != balls.end();) {
+			ball* cball = *iter;
+			remove((*iter));
+			cball->applyTickMovement();
+			cball->render();
+			rootnode->add(cball);
 
+		}
 	}
 
 }
@@ -207,7 +261,7 @@ void OctTree::splitSelf() {
 			for (int z = 0; z < 2; z++) {
 				childnodepos->z = botleft->z + z * childsize;
 				children[x][y][z] = new OctTree(depth + 1, childnodepos,
-						childsize);
+						childsize, rootnode);
 
 			}
 		}

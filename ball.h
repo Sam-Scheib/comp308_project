@@ -6,7 +6,7 @@
  */
 
 #include "Collidable.h"
-class ball: collidable{
+class ball: public collidable{
 public:
 	float radi;
 	ball(float radius, G308_Point initialposition, G308_Point initialvelocity);
