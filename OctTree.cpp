@@ -6,30 +6,24 @@
  */
 
 #include "OctTree.h"
+#include <stdio.h>
 //change these
-int MAX_TREE_DEPTH = 8;
-int MIN_OBJ_PERTREE = 3;
-int MAX_OBJ_PERTREE = 6;
-int depth;
-int level;
-int ballNumber;
-G308_Point* botleft;
-float size;
-#define X_TOP 1
-#define X_BOT 2
-#define Y_TOP 4
-#define Y_BOT 8
-#define Z_TOP 16
-#define Z_BOT 32
 
 OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize) {
 	// TODO Auto-generated constructor stub
 	depth = currentLevel;
 	botleft = bottomleftCorner;
 	size = isize;
+	MAX_OBJ_PERTREE = 3;
+	depth = 0;
+	level = 0;
+	ballNumber = 0;
+	childrenpresent = false;
+	balls = new std::set<ball*>();
 	if (depth == 0) {
-		rootnode == this;
+		rootnode = this;
 	}
+	LowerLeftCorner= *bottomleftCorner;
 
 }
 
@@ -39,6 +33,17 @@ OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize,
 	botleft = bottomleftCorner;
 	size = isize;
 	rootnode = rootnodea;
+
+	MAX_OBJ_PERTREE = 3;
+		depth = 0;
+		level = 0;
+		ballNumber = 0;
+		childrenpresent = false;
+		balls = new std::set<ball*>();
+		if (depth == 0) {
+			rootnode = this;
+		}
+		LowerLeftCorner= *bottomleftCorner;
 }
 /*
  * Add To the oct tree, seeing if we have children, If we Have no children we just add the object.
@@ -52,7 +57,7 @@ void OctTree::add(ball* ball) {
 	} else {
 		ballNumber++;
 
-		balls.insert(ball);
+		balls->insert(ball);
 		if (ballNumber > MAX_OBJ_PERTREE) {
 			splitSelf();
 		}
@@ -147,10 +152,10 @@ void OctTree::remove(ball* ball) {
 		whichchildren(ball, false);
 
 	} else {
-
+		//	printf("No child\n");
 		ballNumber--;
 
-		balls.erase(ball);
+		balls->erase(ball);
 
 	}
 
@@ -162,14 +167,14 @@ void OctTree::pullballsfromChildren() {
 			for (int z = 0; z < 2; z++) {
 				if (children[x][y][z]->childrenpresent) {
 
-					balls.insert(children[x][y][z]->balls.begin(),
-							children[x][y][z]->balls.end());
+					balls->insert(children[x][y][z]->balls->begin(),
+							children[x][y][z]->balls->end());
 
 				} else {
 					children[x][y][z]->removeChildren();
 					if (children[x][y][z]->childrenpresent == false) {
-						balls.insert(children[x][y][z]->balls.begin(),
-								children[x][y][z]->balls.end());
+						balls->insert(children[x][y][z]->balls->begin(),
+								children[x][y][z]->balls->end());
 					} else {
 						//		printf("Something broke in pullballs \n");
 					}
@@ -200,25 +205,30 @@ void OctTree::performCollisions() {
 			for (int y = 0; y < 2; y++) {
 				for (int z = 0; z < 2; z++) {
 					children[x][y][z]->performCollisions();
+				//printf("children enterd\n");
 				}
 			}
 		}
 	} else {
 
-		for (set<ball*>::iterator iter = balls.begin(); iter != balls.end();) {
-			for (set<ball*>::iterator rator = balls.begin();
-					rator != balls.end();) {
+		for (set<ball*>::iterator iter = balls->begin(); iter != balls->end();
+				iter++) {
+			for (set<ball*>::iterator rator = balls->begin();
+					rator != balls->end(); rator++) {
 				if (iter == rator) {
 					//skip
 				} else {
 					//Test Collision / enact collision with your patner
 					ball* b1 = *iter;
 					ball* b2 = *rator;
-					if(b1->ballwillcollide(b2)){
-					b1->collision(b2);}
+					if (b1->ballwillcollide(b2)) {
+						printf("collisen tered~~~~~~~~~~~~~~~\n");
+						b1->collision(b2);
+					}
 
 				}
 			}
+			(*iter)->render();
 		}
 
 	}
@@ -236,14 +246,28 @@ void OctTree::moveBalls() {
 		}
 
 	} else {
-		for (set<ball*>::iterator iter = balls.begin(); iter != balls.end();) {
+		std::set<ball*> *temp = new std::set<ball*>();
+		for (set<ball*>::iterator iter = balls->begin(); iter != balls->end();
+				iter++) {
 			ball* cball = *iter;
-			remove((*iter));
-			cball->applyTickMovement();
-			cball->render();
-			rootnode->add(cball);
+
+
+
+			temp->insert(cball);
 
 		}
+		balls->clear();
+		ballNumber = 0;
+
+
+		for (set<ball*>::iterator rat = temp->begin(); rat != temp->end();
+				rat++) {
+			(*rat)->applyTickMovement();
+
+			rootnode->add(*rat);
+		}
+
+
 	}
 
 }
@@ -270,12 +294,12 @@ void OctTree::splitSelf() {
 
 	//Put things in the right hole
 
-	for (set<ball*>::iterator iter = balls.begin(); iter != balls.end();
+	for (set<ball*>::iterator iter = balls->begin(); iter != balls->end();
 			++iter) {
 		add(*iter);
 
 	}
-	balls.clear();
+	balls->clear();
 
 }
 

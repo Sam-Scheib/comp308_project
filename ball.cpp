@@ -4,15 +4,12 @@
  *  Created on: Oct 13, 2012
  *      Author: whyteferg
  */
-
+#include "quaternion.h"
 #include "ball.h"
 #include <GL/glut.h>
 #include "math.h"
-#include "quaternion.h"
-float GRAVITY = 1;
 
-G308_Point position;
-G308_Point velocity;
+float GRAVITY = 1;
 
 ball::ball(float rad, G308_Point position_in, G308_Point velocity_in) {
 	// TODO Auto-generated constructor stub
@@ -21,19 +18,26 @@ ball::ball(float rad, G308_Point position_in, G308_Point velocity_in) {
 	radi = rad;
 }
 
+
 void ball::applyTickMovement() {
 	//Gravity
-	velocity.y = velocity.y - GRAVITY;
+	//velocity.y = velocity.y - GRAVITY;
 
 	position = subtract(position, velocity);
 
 }
 
+float ball::radius(){
+	return this->radi;
+}
+
 void ball::render() {
 	glPushMatrix();
 	glTranslatef(position.x, position.y, position.z);
-	glutSolidSphere(radi, 4, 4);
+	glutSolidSphere(radi, 12, 12);
+	glTranslatef(-position.x, -position.y, -position.z);
 	glPopMatrix();
+	//printf("whatthefuck %f %f %f \n",position.x,position.y,position.z);
 }
 
 G308_Point* ball::getVector() {
@@ -62,16 +66,15 @@ bool ball::willcollidenormal(G308_Point* normal) {
 	return (dotProduct(velocity, *normal) > 0);
 }
 
-bool ball::ballwillcollide(collidable* otherball) {
-	float r = radi * 2;
+bool ball::ballwillcollide(ball* otherball) {
 	G308_Point distance = subtract(position, *otherball->getPosition());
 	float length = sqrt(
 			(distance.x * distance.x) + (distance.y * distance.y)
 					+ (distance.z * distance.z));
-	if (length < r * r) {
+	if (length < radi + otherball->radius()) {
 		G308_Point additivevel = subtract(velocity, *otherball->getVector());
 		float d = dotProduct(additivevel, distance);
-		return d < 0;
+		return d > 0;
 	}
 	return false;
 }
@@ -91,7 +94,7 @@ bool ball::collideNormal(G308_Point* normal) {
 	return true;
 }
 
-bool ball::collision(collidable* object) {
+bool ball::collision(ball* object) {
 	G308_Point dist = subtract(position, *object->getPosition());
 	float length = sqrt(
 			(dist.x * dist.x) + (dist.y * dist.y) + (dist.z * dist.z));
@@ -107,12 +110,15 @@ bool ball::collision(collidable* object) {
 	temp2 = dotProduct(temp, *object->getVector());
 	area = scalarMultiply(temp, temp2);
 	object->applyForce(&area);
+//	velocity.x = -velocity.x;
+//	velocity.y = -velocity.y;
+//	velocity.z = -velocity.z;
 
 	return true;
 }
 
 ball::~ball() {
-
+	;
 	// TODO Auto-generated destructor stub
 }
 

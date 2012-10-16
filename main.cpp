@@ -32,6 +32,7 @@
 
 //Defines for balls
 #include "OctTree.h"
+#include "ball.h"
 
 // Global variables
 GLuint g_mainWnd;
@@ -46,7 +47,7 @@ float spotXAngle = 266.0, spotYAngle = 59.0;
 
 // Camera variables
 float radius = 300.0;
-G308_Point eye = {0.0, 0.0, 1.0};
+G308_Point eye = {0.0, 0.0, 30.0};
 G308_Point center = {0.0, 0.0, 0.0};
 G308_Point top = {0.0, 1.0, 0.0};
 
@@ -56,10 +57,12 @@ int mouseX, mouseY;
 // Variables for our individual modules
 OctTree* ballSim;
 bool displayBalls=true;
+ball* b1 ;
+ball* b2;
 
 
 Fluid* fluidSim;
-bool displayFluid = true, waterFlowing = true;
+bool displayFluid = false, waterFlowing = false;
 
 //Francis ~IK stuff
 bool displayRobot = true;//draw robot arms
@@ -106,7 +109,40 @@ int main(int argc, char** argv)
 	if (displayRobot) {
 		//pass for now
 	}
+	if(displayBalls){
+		/*G308_Point* testpoint = new G308_Point;
+		testpoint->x=1.0f;
+		testpoint->y=1.0f;
+		testpoint->z=0.0f;*/
+		G308_Point testpoint = {0.0f, 0.0f, 0.0f };
+		G308_Point testpoint2 = {0.0f, 5.0f, 0.0f };
+		/*G308_Point* testpoint2 = new G308_Point;
+		testpoint2->x=2.0f;
+		testpoint2->y=2.0f;
+		testpoint2->z=0.0f;*/
+		G308_Point* zerovelocity = new G308_Point;
+		zerovelocity->x=0.0f;
+		zerovelocity->y=0.0f;
+		zerovelocity->z=0.0f;
+		G308_Point* unitvelocity = new G308_Point;
+		unitvelocity->x=0.0f;
+		unitvelocity->y=0.01f;
+		unitvelocity->z=0.0f;
+		G308_Point* bottomleft = new G308_Point;
+		bottomleft->x=-5.0f;
+		bottomleft->y=-5.0f;
+		bottomleft->z=-5.0f;
+		float size = 10;
 
+	 b1 = new ball(1, testpoint, *zerovelocity);
+	b2 = new ball(1, testpoint2, *unitvelocity);
+	ballSim = new OctTree(0,bottomleft,size);
+	ballSim->add(b1);
+	ballSim->add(b2);
+	if(b1==b2)
+			printf("fuck\n");
+
+	}
 
 	G308_SetLight();
 	G308_SetCamera();
@@ -143,6 +179,11 @@ void G308_Display()
 
 	if(displayBalls){
 		//ballSim = new OctTree();
+
+		ballSim->moveBalls();
+		ballSim->performCollisions();
+
+
 
 
 	}
