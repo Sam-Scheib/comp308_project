@@ -51,7 +51,7 @@ int mouseX, mouseY;
 
 // Variables for our individual modules
 Fluid* fluidSim;
-bool displayFluid = true, waterFlowing = false;
+bool displayFluid = true, waterFlowing = true;
 int rows = 100, cols = 100;
 
 //Francis ~IK stuff
@@ -228,20 +228,24 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		fluidSim->calculateSurface();
 		glutPostRedisplay();
 		break;
-		// toggle water flowing naturally
+	// toggle water flowing naturally
 	case 'x':
 		waterFlowing = !waterFlowing;
 		break;
-		// flatten the terrain
+	// flatten the terrain
 	case 't':
 		fluidSim->flattenTerrain();
 		break;
-		// randomise the heights of the water
+	// reset the heights of the water
 	case 'r':
+		fluidSim->reset();
+		break;
+	// randomise the heights of the water
+	case 'b':
 		fluidSim->randomiseHeights();
 		break;
-		// randomise terrain
-	case 'b':
+	// randomise terrain
+	case 'g':
 		fluidSim->randomiseTerrain();
 		break;
 	case 'f':
@@ -255,11 +259,18 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 	case 'p':
 		fluidSim->poorWater(rows/2, cols/2);
 		break;
-		// make a wave
+	// make a wave
 	case 'v':
 		fluidSim->wave();
 		break;
+	// toggle alpha blend
+	case 'z':
+		fluidSim->alpha = !fluidSim->alpha;
+		break;
 
+	// camera movement controls
+
+	// zoom in
 	case 'w':
 		zooming(-1.0);
 		break;
@@ -296,17 +307,17 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		}
 		break;
 
-	case '7':
+	case '9':
 		goal.z = goal.z-2;
 		break;
-	case '8':
+	case '0':
 		goal.x = goal.x-2;
 		break;
-	case '9':
+	case '7':
 		goal.x = goal.x+2;
 		break;
 
-	case '0':
+	case '8':
 		goal.z = goal.z+2;
 		break;\
 		//	case 'f':

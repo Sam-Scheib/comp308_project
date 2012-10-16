@@ -21,7 +21,7 @@
 
 Fluid::Fluid(int row, int col) {
 	alpha = true;
-	wavespeed = 0.2;
+	wavespeed = 0.1;
 	wallheight = 6.0;
 	groundheight = 0.0;
 	waterheight = (row+col)/((row+col)/8.0);
@@ -101,6 +101,15 @@ void Fluid::bowlTerrain() {
 				else
 					ground[i][j] = (rows-1-i)/slope+1;
 			}
+		}
+	}
+}
+
+void Fluid::reset() {
+	for (int i = 1; i < rows-1; i++) {
+		for (int j = 1; j < cols-1; j++) {
+			heights[i][j] = waterheight;
+			velocities[i][j] = 0.0;
 		}
 	}
 }
