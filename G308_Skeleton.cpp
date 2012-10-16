@@ -22,13 +22,14 @@
 #include <stdio.h>
 #include <fstream>
 #include "define.h"
+#include <cmath>
 
 //#define M_PI 3.14
 //takes a filename for an asf file
-Skeleton::Skeleton(char* filename) {
+Skeleton::Skeleton(char* filename, G308_Point pos) {
 	G308_Point x_axis = {1, 0, 0};
 	//set up defaults
-	default_pos = {0, 0, -10};
+	default_pos = pos;
 	stored_axis = {0, 0, 0};
 	stored_angle = 0;
 	numBones = 1;
@@ -38,6 +39,7 @@ Skeleton::Skeleton(char* filename) {
 	selectedAxis = -1;
 	selectedBone = -1;
 	animationExists = true;
+	iterations = 1;
 	root = (bone*) malloc(sizeof(bone) * maxBones);
 	for (int i = 0; i < maxBones; i++) {
 		root[i].numChildren = 0;
@@ -370,6 +372,9 @@ quaternion* Skeleton::getRotation(int bone_id) {
 		}
 	}
 }
+void Skeleton::setIterations(int i) {
+	iterations = i;
+}
 
 /**
  * Attempt to generate a solution for the given end point
@@ -391,35 +396,38 @@ void Skeleton::solveIK(G308_Point goal, bone* end_effector) {
 		curr_rot_point = bone_data;
 		animationExists = false;
 	}
-	float dist = vector_length(subtract(goal, bone_data->B_POS));
-	if(dist < DIST_DELTA) {
-		//if we are within distance we break the loop
-		complete = true;
-	}
-	//double check as we don't want to move root around
-	if (curr_rot_point->parent->parent==NULL || complete) {
-		animationExists = true;
-		return;
-	}
-	//set the cur_rot_point to the parent
-	//printf("updating to parent\n");
-	curr_rot_point = curr_rot_point->parent;
-	//printf("doing id:%d\n", curr_rot_point->bone_id);
-	//find an angle of rotation around cur_rot_points position that brings
-	//end effector closest to our goal
-	angle = calculateRotation(goal, curr_rot_point->B_POS, bone_data->B_POS);
-	curr_rot_point->B_ROT = angle;
-	//bone* currentbone = findBone(cur_rot_point->bone_id);
-	calculatePositions(root);
-	for (int i = 0; i<NUM_BONES; i++) {
-		//zero Bone position for each Bone Data struct
-		B_DATA[i].B_POS = root[i].pos;
-	}
+	for (int i = 0; i< iterations ||complete; i++) {
+		float dist = vector_length(subtract(goal, bone_data->B_POS));
+		if(dist < DIST_DELTA) {
+			//if we are within distance we break the loop
+			complete = true;
+		}
+		//double check as we don't want to move root around
+		if (curr_rot_point->parent->parent==NULL || complete) {
+			animationExists = true;
+			return;
+		}
+		//set the cur_rot_point to the parent
+		//printf("updating to parent\n");
+		curr_rot_point = curr_rot_point->parent;
+		//printf("doing id:%d\n", curr_rot_point->bone_id);
+		//find an angle of rotation around cur_rot_points position that brings
+		//end effector closest to our goal
+		angle = calculateRotation(goal, curr_rot_point->B_POS, bone_data->B_POS);
+		curr_rot_point->B_ROT = curr_rot_point->B_ROT * angle;
+		//bone* currentbone = findBone(cur_rot_point->bone_id);
+		calculatePositions(root);
+		for (int i = 0; i<NUM_BONES; i++) {
+			//zero Bone position for each Bone Data struct
+			B_DATA[i].B_POS = root[i].pos;
+		}
 
-	printf("run complete\n");
-	//i++;
-	//}
-	//iteration completed
+		//printf("run complete\n");
+		//i++;
+		//}
+		//iteration completed
+
+	}
 	step = 1;
 }
 
@@ -453,23 +461,84 @@ void Skeleton::applyRotation(GLfloat* matrix, IK_Rotation* bone_data, G308_Point
 		applyRotation(matrix, bone_data->children[i], rot_point);
 	}
 }
+float DotProduct2d(float sidea, float sideb, float side2a, float side2b) {
+	return (sidea*side2a) + (sideb*side2b);
+}
+float length2d(float sidea, float sideb, float side2a, float side2b) {
+	return (sqrt(sidea*sidea+sideb*sideb) * sqrt(side2a*side2a+side2b*side2b));
+}
+float rad_to_deg(float angle) {
+	return angle*(180/M_PI);
+}
 
 /**
  * Find a rotation around rot point that brings the end point as close as possible
- * to the goal point
+ * to the goal pointp
  */
 quaternion Skeleton::calculateRotation(G308_Point goal, G308_Point rot_point, G308_Point end) {
 	//we are currently doing this without thinking about DOF constraints
 	//vector from rotation point to goal point
 	//first we calc x amount
-	printf("goal point!: %f, %f, %f\n", goal.x, goal.y, goal.z);
-	printf("rotation point: %f, %f, %f\n", rot_point.x, rot_point.y, rot_point.z);
-	printf("end effector: %f, %f, %f\n", end.x, end.y, end.z);
-	G308_Point goal_rot = subtract(rot_point, goal);
+	//so triangle defined by goal.y - rot_point.y and goal.z-rot_point.z
+	//	float side1_y = goal.y-rot_point.y;
+	//	float side1_z = goal.z-rot_point.z;
+	//	float side2_y = end.y - rot_point.y;
+	//	float side2_z = end.z-rot_point.z;
+	//	float angle_x = DotProduct2d(side1_y, side1_z, side2_y, side2_z);
+	//	angle_x =  angle_x / length2d(side1_y, side1_z, side2_y, side2_z);
+	//	if (isnan(angle_x)) {
+	//		angle_x = 1;
+	//	}
+	//	angle_x = acos(angle_x);
+	//	if (isnan(angle_x)) {
+	//		angle_x = 0;
+	//	}
+	//	angle_x = rad_to_deg(angle_x);
+	//	quaternion x = quaternion(angle_x, {1, 0, 0});
+	//
+	//	//now y and triangle by goal.x -rot_point.x etc
+	//	side1_y = goal.x-rot_point.x;
+	//	side1_z = goal.z-rot_point.z;
+	//	side2_y = end.x - rot_point.x;
+	//	side2_z = end.z-rot_point.z;
+	//	float angle_y = DotProduct2d(side1_y, side1_z, side2_y, side2_z);
+	//	angle_y =  angle_y / length2d(side1_y, side1_z, side2_y, side2_z);
+	//	if(isnan(angle_y)) {
+	//		angle_y = 1;
+	//	}
+	//	angle_y = acos(angle_y);
+	//	if (isnan(angle_y)) {
+	//		angle_y = 0;
+	//	}
+	//	angle_y = rad_to_deg(angle_y);
+	//	quaternion y = quaternion(angle_y, {0, 1, 0});
+	//
+	//	//now z and traingle by goal.y - rot_point.y and goal.x et.c
+	//	side1_y = goal.x-rot_point.x;
+	//	side1_z = goal.y-rot_point.y;
+	//	side2_y = end.x - rot_point.x;
+	//	side2_z = end.y-rot_point.y;
+	//	float angle_z = DotProduct2d(side1_y, side1_z, side2_y, side2_z);
+	//	angle_z =  angle_z / length2d(side1_y, side1_z, side2_y, side2_z);
+	//	if(isnan(angle_z)) {
+	//		angle_z = 1;
+	//	}
+	//	angle_z = acos(angle_z);
+	//	if (isnan(angle_z)) {
+	//		angle_z = 0;
+	//	}
+	//	angle_z = rad_to_deg(angle_z);
+	//	quaternion z = quaternion(angle_z, {0, 0, 1});
+	//	printf("anglex:%f, angley:%f, anglez:%f\n", angle_x, angle_y, angle_z);
+
+	//printf("goal point!: %f, %f, %f\n", goal.x, goal.y, goal.z);
+	//printf("rotation point: %f, %f, %f\n", rot_point.x, rot_point.y, rot_point.z);
+	//printf("end effector: %f, %f, %f\n", end.x, end.y, end.z);
+	G308_Point goal_rot = subtract(goal, rot_point);
 	//vector from rotation point to end effector
-	G308_Point rot_end = subtract(rot_point, end);
-	printf("Vector goal rot(%f, %f, %f)\n", goal_rot.x, goal_rot.y, goal_rot.z);
-	printf("Vector end_rot(%f, %f, %f)\n", rot_end.x, rot_end.y, rot_end.z);
+	G308_Point rot_end = subtract(end, rot_point);
+	//printf("Vector goal rot(%f, %f, %f)\n", goal_rot.x, goal_rot.y, goal_rot.z);
+	//printf("Vector end_rot(%f, %f, %f)\n", rot_end.x, rot_end.y, rot_end.z);
 	//angle and axis thats being rotated around
 	float angle;
 	G308_Point axis;
@@ -497,7 +566,6 @@ quaternion Skeleton::calculateRotation(G308_Point goal, G308_Point rot_point, G3
 		//axis = normalise(axis);
 		if ((stored_angle - angle) < 0.01 && vec_total((subtract(stored_axis, axis))) == 0) {
 			angle = 0;
-			printf("within deltas\n");
 		}
 		stored_angle = angle;
 		stored_axis = axis;
@@ -509,8 +577,10 @@ quaternion Skeleton::calculateRotation(G308_Point goal, G308_Point rot_point, G3
 		axis.z = 0;
 		angle = 0;
 	}
-	printf("Angle:%f, Axis(%f, %f, %f)\n", angle, axis.x, axis.y, axis.z);
+	//printf("Angle:%f, Axis(%f, %f, %f)\n", angle, axis.x, axis.y, axis.z);
 	//return the quaternion representing this rotation
+	//quaternion result = x*y*z;
+	//return result;
 	return quaternion(angle, axis);
 
 }

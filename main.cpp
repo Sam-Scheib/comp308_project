@@ -57,8 +57,9 @@ int rows = 100, cols = 100;
 //Francis ~IK stuff
 bool displayRobot = true;//draw robot arms
 bool calculateIK = false;//calculate ik values
+bool is_paused = false;
 Skeleton* robot;//pointer to our robot arm
-G308_Point goal {25, 0, -10};
+G308_Point goal {-30, -10, -30};
 
 void G308_keyboardListener(unsigned char, int, int);
 void G308_mouseListener(int, int, int, int);
@@ -74,7 +75,7 @@ void SpotLight();
 
 int main(int argc, char** argv)
 {
-s	if(argc != 1){
+	if(argc != 1){
 		printf("run without arguments:\n./Assign5\n");
 		exit(EXIT_FAILURE);
 	}
@@ -98,7 +99,8 @@ s	if(argc != 1){
 		fluidSim = new Fluid(rows, cols);
 	}
 	if (displayRobot) {
-		robot = new Skeleton("robot.asf");
+		robot = new Skeleton("robot.asf", {-40, -20, -40});
+		robot->setIterations(40);
 	}
 
 
@@ -137,7 +139,10 @@ void G308_Display()
 
 	if(displayRobot) {
 		glPushMatrix();
-		robot->setEndEffector(3, goal);
+		if(!is_paused ) {
+			robot->step = 0;
+		}
+		robot->setEndEffector(4, goal);
 		glPopMatrix();
 		glPushMatrix();
 		robot->display();
@@ -261,9 +266,26 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 	case 'p':
 		robot->step = 0;
 		break;
+	case '6':
+		if(is_paused) {
+			is_paused = false;
+		}else {
+			is_paused = true;
+		}
+		break;
 
 	case 'l':
-		goal.z = goal.z+10;
+		goal.z = goal.z-2;
+		break;
+	case 'n':
+		goal.x = goal.x-2;
+		break;
+	case 'm':
+		goal.x = goal.x+2;
+		break;
+
+	case '9':
+		goal.z = goal.z+2;
 		break;
 		//	case 'f':
 

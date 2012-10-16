@@ -135,11 +135,12 @@ public:
 	int numBones, selectedBone, selectedAxis;
 	float angle;
 	int step;
+	int iterations;
 	//find a bone by name
 	bone* findBone(char*);
 	bone* findBone(int);
 	//constructor destructor
-	Skeleton(char*);
+	Skeleton(char*, G308_Point);
 	~Skeleton();
 	//draw the skeleton
 	void display();
@@ -149,7 +150,7 @@ public:
 	//by bone_id, this will also increase the rotation of that angle
 	//for the next call
 	quaternion* getRotation(int bone_id);
-
+	void setIterations(int i);
 	//attempt to generate a solution for this end goal and effector pair
 	void solveIK(G308_Point Goal, bone* end_effector);
 };
