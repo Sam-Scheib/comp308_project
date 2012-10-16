@@ -35,12 +35,8 @@ OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize) {
  */
 void OctTree::add(ball* ball) {
 
-
-	float childsize = size / 2;
-
-
 	if (childrenpresent) {
-		whichchildren(ball,true);
+		whichchildren(ball, true);
 
 	} else {
 		ballNumber++;
@@ -50,7 +46,7 @@ void OctTree::add(ball* ball) {
 
 }
 
-void OctTree::whichchildren(ball* ball,bool addflag) {
+void OctTree::whichchildren(ball* ball, bool addflag) {
 	float xmax = ball->getPosition()->x + ball->radi;
 	float xmin = ball->getPosition()->x - ball->radi;
 	float ymax = ball->getPosition()->y + ball->radi;
@@ -59,18 +55,12 @@ void OctTree::whichchildren(ball* ball,bool addflag) {
 	float zmin = ball->getPosition()->z - ball->radi;
 	float childsize = size / 2;
 
-	unsigned char switchlist[8] = {
-			X_TOP | Y_TOP | Z_TOP,
-			X_BOT | Y_TOP | Z_TOP,
-			X_TOP |Y_BOT |	Z_TOP,
-			X_BOT |Y_BOT |Z_TOP,
-			X_TOP | Y_TOP | Z_BOT,
-			X_BOT | Y_TOP | Z_BOT,
-			X_TOP |Y_BOT |	Z_BOT,
-			X_BOT |Y_BOT |Z_BOT
+	unsigned char switchlist[8] = { X_TOP | Y_TOP | Z_TOP,
+			X_BOT | Y_TOP | Z_TOP, X_TOP | Y_BOT | Z_TOP, X_BOT | Y_BOT | Z_TOP,
+			X_TOP | Y_TOP | Z_BOT, X_BOT | Y_TOP | Z_BOT, X_TOP | Y_BOT | Z_BOT,
+			X_BOT | Y_BOT | Z_BOT
 
 	};
-
 
 	unsigned char possiblechildren = 0;
 
@@ -104,60 +94,102 @@ void OctTree::whichchildren(ball* ball,bool addflag) {
 		possiblechildren = possiblechildren | Z_BOT;
 	}
 
+	for (int i = 0; i < 8; i++) {
+		if ((possiblechildren & switchlist[i]) == switchlist[i]) {
 
-
-
-	for(int i = 0;i<8 ; i ++ ){
-		if( (possiblechildren & switchlist[i]) == switchlist[i]){
-
-			int x=0, y=0,z=0;
-			if( switchlist[i] & X_TOP )
+			int x = 0, y = 0, z = 0;
+			if (switchlist[i] & X_TOP)
 				x = 1;
 			else
 				x = 0;
-			if( switchlist[i] & Z_TOP )
+			if (switchlist[i] & Z_TOP)
 				z = 1;
 			else
 				z = 0;
-			if( switchlist[i] & Y_TOP)
+			if (switchlist[i] & Y_TOP)
 				y = 1;
 			else
-				y=0;
+				y = 0;
 
-
-
-			if(addflag){
-				children[x][y][z]->add( ball);
-			}else{
-				children[x][y][z]->remove( ball);
+			if (addflag) {
+				children[x][y][z]->add(ball);
+			} else {
+				children[x][y][z]->remove(ball);
 			}
-
 
 		}
 
 	}
 
-
-
-
 }
 
 void OctTree::remove(ball* ball) {
 
-
-	float childsize = size / 2;
-	int x = 0;
-	int y = 0;
-	int z = 0;
 	if (childrenpresent) {
-		whichchildren(ball,false);
 
-
+		whichchildren(ball, false);
 
 	} else {
+
 		ballNumber--;
 
 		balls.erase(ball);
+	}
+
+}
+
+void OctTree::pullballsfromChildren() {
+	for (int x = 0; x < 2; x++) {
+		for (int y = 0; y < 2; y++) {
+			for (int z = 0; z < 2; z++) {
+				if (children[x][y][z]->childrenpresent) {
+
+					balls.insert(children[x][y][z]->balls.begin(),
+							children[x][y][z]->balls.end());
+
+				} else {
+					children[x][y][z]->removeChildren();
+					if(children[x][y][z]->childrenpresent==false){
+					balls.insert(children[x][y][z]->balls.begin(),children[x][y][z]->balls.end());
+					}else{
+				//		printf("Something broke in pullballs \n");
+					}
+					}
+			}
+		}
+	}
+
+}
+
+void OctTree::removeChildren() {
+	pullballsfromChildren();
+	for (int x = 0; x < 2; x++) {
+		for (int y = 0; y < 2; y++) {
+			for (int z = 0; z < 2; z++) {
+				delete children[x][y][z];
+			}
+		}
+	}
+
+	childrenpresent = false;
+
+}
+void OctTree::performCollisions(){
+
+}
+
+void OctTree::moveBalls(){
+	if(childrenpresent){
+		for (int x = 0; x < 2; x++) {
+			for (int y = 0; y < 2; y++) {
+				for (int z = 0; z < 2; z++) {
+					children[x][y][z]->moveBalls();
+				}
+			}
+		}
+
+	}else{
+
 	}
 
 }
@@ -167,7 +199,7 @@ void OctTree::splitSelf() {
 	childrenpresent = true;
 	float childsize = size / 2;
 	G308_Point* childnodepos = new G308_Point;
-	int i = 0;
+
 	for (int x = 0; x < 2; x++) {
 		childnodepos->x = botleft->x + x * childsize;
 		for (int y = 0; y < 2; y++) {
@@ -176,15 +208,25 @@ void OctTree::splitSelf() {
 				childnodepos->z = botleft->z + z * childsize;
 				children[x][y][z] = new OctTree(depth + 1, childnodepos,
 						childsize);
-				i++;
+
 			}
 		}
 
 	}
 
+	//Put things in the right hole
+
+	for (set<ball*>::iterator iter = balls.begin(); iter != balls.end();
+			++iter) {
+		add(*iter);
+
+	}
+	balls.clear();
+
 }
 
 OctTree::~OctTree() {
 	// TODO Auto-generated destructor stub
+
 }
 

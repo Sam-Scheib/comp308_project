@@ -29,7 +29,10 @@ public:
 	void splitSelf();
 	void add(ball* ball);
 	void renderTree();
-
+	void removeChildren();
+	void pullballsfromChildren();
+	void moveBalls();
+	void performCollisions();
 	virtual ~OctTree();
 
 

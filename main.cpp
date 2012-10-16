@@ -59,7 +59,7 @@ bool displayBalls=true;
 
 
 Fluid* fluidSim;
-bool displayFluid = false, waterFlowing = false;
+bool displayFluid = true, waterFlowing = true;
 
 //Francis ~IK stuff
 bool displayRobot = true;//draw robot arms
