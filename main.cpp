@@ -52,6 +52,7 @@ int mouseX, mouseY;
 // Variables for our individual modules
 Fluid* fluidSim;
 bool displayFluid = true, waterFlowing = false;
+int rows = 100, cols = 100;
 
 //Francis ~IK stuff
 bool displayRobot = true;//draw robot arms
@@ -94,7 +95,7 @@ int main(int argc, char** argv)
 
 	// Add individual modules here
 	if (displayFluid) {
-		fluidSim = new Fluid(100, 100);
+		fluidSim = new Fluid(rows, cols);
 	}
 	if (displayRobot) {
 		robot = new Skeleton("robot.asf");
@@ -224,31 +225,40 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 	case 'f':
 		fluidSim->lowerWater();
 		break;
-		// add water to the centre of the pool
-	case 'p':
+	// add water to random points
+	case 'o':
 		fluidSim->poorWater();
 		break;
 		// make a wave
 	case 'v':
 		fluidSim->wave();
 		break;
-		//
-		// wasd controls for camera movement
-		//
+
 	case 'w':
-		zooming(-0.2);
+		zooming(-1.0);
 		break;
+	// zoom out
 	case 's':
-		zooming(0.2);
+		zooming(1.0);
 		break;
+	// pan up
+	case 'e':
+		panning(0.0, 1.0);
+		break;
+	// pan down
+	case 'q':
+		panning(0.0, -1.0);
+		break;
+	// pan left
 	case 'a':
-		panning(0.2, 0);
+		panning(1.0, 0.0);
 		break;
+	// pan right
 	case 'd':
-		panning(-0.2, 0);
+		panning(-1.0, 0.0);
 		break;
 
-	case 'o':
+	case 'p':
 		robot->step = 0;
 		break;
 		//	case 'f':
@@ -259,29 +269,30 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		//Reserved, spawns many balls, more than you have.
 		//	break;
 
-		// Old lighting controls
-	case 'e':
-		spotCutoff += 1.0;
-		if (spotCutoff > 90)
-			spotCutoff = 90;
-		break;
-	case 'q':
-		spotCutoff -= 1.0;
-		if (spotCutoff < 1)
-			spotCutoff = 1;
-		break;
-	case 'i':
-		spotXAngle -= 1.0;
-		break;
-	case 'k':
-		spotXAngle += 1.0;
-		break;
-	case 'j':
-		spotYAngle -= 1.0;
-		break;
-	case 'l':
-		spotYAngle += 1.0;
-		break;
+
+	// Old lighting controls
+//	case 'e':
+//		spotCutoff += 1.0;
+//		if (spotCutoff > 90)
+//			spotCutoff = 90;
+//		break;
+//	case 'q':
+//		spotCutoff -= 1.0;
+//		if (spotCutoff < 1)
+//			spotCutoff = 1;
+//		break;
+//	case 'i':
+//		spotXAngle -= 1.0;
+//		break;
+//	case 'k':
+//		spotXAngle += 1.0;
+//		break;
+//	case 'j':
+//		spotYAngle -= 1.0;
+//		break;
+//	case 'l':
+//		spotYAngle += 1.0;
+//		break;
 	}
 
 	glutPostRedisplay();
@@ -340,12 +351,13 @@ void G308_mouseMovement(int x, int y) {
 	//	printf("top before %f %f %f\n", top.x, top.y, top.z);
 	if(lookActive) {
 		float matrix[16];
+		G308_Point yAxis = {0.0, 1.0, 0.0};
 		G308_Point directionVector = {center.x-eye.x, center.y-eye.y, center.z-eye.z};
 		G308_Point temp = directionVector;
 		temp = crossProduct(temp, top);
 		temp = normalise(temp);
 		quaternion up = quaternion((mouseY-y)/20.0, temp);
-		quaternion side = quaternion((mouseX-x)/20.0, top);
+		quaternion side = quaternion((mouseX-x)/20.0, yAxis);
 		quaternion q = up * side;
 		q.toMatrix(matrix);
 		G308_Point newVector = getNewPoint(directionVector, matrix);
@@ -354,7 +366,7 @@ void G308_mouseMovement(int x, int y) {
 		center.z = eye.z + newVector.z;
 
 		up.toMatrix(matrix);
-		newVector = getNewPoint(top, matrix);
+		newVector = getNewPoint(yAxis, matrix);
 		top.x = newVector.x;
 		top.y = newVector.y;
 		top.z = newVector.z;
@@ -412,9 +424,9 @@ void G308_Reshape(int w, int h)
 // Set Light
 void G308_SetLight()
 {
-	float pointPosition[] = {0.0f, 2.0f, 5.0f, 1.0f};
-	float directionalPosition[] = {0.0f, 0.0f, 1.0f, 0.0f};
-	float ambientPosition[] = {0.0f, 10.0f, 10.0f, 1.0f};
+	float pointPosition[] = {0.0f, 10.0f, 5.0f, 1.0f};
+	float directionalPosition[] = {0.4f, 0.8f, 0.7f, 0.0f};
+	float ambientPosition[] = {0.0f, 20.0f, 10.0f, 1.0f};
 	float direction[] = {0.4f, -1.0f, 0.4f};
 	float diffintensity[] = {0.3f, 0.3f, 0.3f, 1.0f};
 	float ambient[] = {0.2f, 0.2f, 0.2f, 1.0f};

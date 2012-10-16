@@ -28,7 +28,7 @@ private:
 	void checkGroundHit(int, int);
 
 public:
-	bool glInited;
+	bool glInited, alpha;
 	void glInit();
 	Fluid(int, int);
 	~Fluid();
@@ -38,6 +38,7 @@ public:
 	void calculateSurface();
 	void lowerWater();
 	void poorWater();
+	void poorWater(int, int);
 	void wave();
 	void displayFluid();
 };
