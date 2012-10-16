@@ -20,6 +20,7 @@
 //		}";
 
 Fluid::Fluid(int row, int col) {
+	alpha = true;
 	wavespeed = 0.2;
 	wallheight = 6.0;
 	groundheight = 0.0;
@@ -114,8 +115,8 @@ void Fluid::randomiseHeights() {
 }
 
 void Fluid::flattenTerrain() {
-	for (int i = 1; i < rows-1; i++) {
-		for (int j = 1; j < cols-1; j++) {
+	for (int i = 0; i < rows-1; i++) {
+		for (int j = 0; j < cols-1; j++) {
 			ground[i][j] = groundheight;
 		}
 	}
@@ -124,8 +125,8 @@ void Fluid::flattenTerrain() {
 }
 
 void Fluid::randomiseTerrain() {
-	for (int i = 1; i < rows-1; i++) {
-		for (int j = 1; j < cols-1; j++) {
+	for (int i = 0; i < rows-1; i++) {
+		for (int j = 0; j < cols-1; j++) {
 			ground[i][j] = (float)rand() / ((float)RAND_MAX);
 		}
 	}
@@ -143,22 +144,63 @@ void Fluid::lowerWater() {
 }
 
 void Fluid::poorWater() {
-	velocities[rows/2][cols/2] += 0.3;
-	velocities[rows/2+1][cols/2] += 0.1;
-	velocities[rows/2-1][cols/2] += 0.1;
-	velocities[rows/2][cols/2+1] += 0.1;
-	velocities[rows/2][cols/2-1] += 0.1;
+	int x = (int)(((float)rand() / ((float)RAND_MAX) -0.5)*(rows-4)) + rows/2;
+	int y = (int)(((float)rand() / ((float)RAND_MAX) -0.5)*(cols-4)) + cols/2;
+//	printf("x is %d, y is %d\n", x, y);
+	poorWater(x, y);
+}
+
+void Fluid::poorWater(int x, int y) {
+	if (x < 3 || x > rows-3 || y < 3 || y > cols-3)
+		return;
+	float amount = 0.2;
+	velocities[x][y] -= amount;
+	velocities[x+1][y] -= amount;
+	velocities[x-1][y] -= amount;
+	velocities[x][y+1] -= amount;
+	velocities[x][y-1] -= amount;
+	velocities[x+1][y+1] -= amount;
+	velocities[x-1][y-1] -= amount;
+	velocities[x-1][y+1] -= amount;
+	velocities[x+1][y-1] -= amount;
+
+	velocities[x+2][y] += amount/2;
+	velocities[x-2][y] += amount/2;
+	velocities[x][y+2] += amount/2;
+	velocities[x][y-2] += amount/2;
+	velocities[x+2][y+1] += amount/2;
+	velocities[x-2][y+1] += amount/2;
+	velocities[x+1][y+2] += amount/2;
+	velocities[x+1][y-2] += amount/2;
+	velocities[x+2][y-1] += amount/2;
+	velocities[x-2][y-1] += amount/2;
+	velocities[x+1][y+2] += amount/2;
+	velocities[x+1][y-2] += amount/2;
+	velocities[x+2][y+1] += amount/2;
+	velocities[x-2][y+1] += amount/2;
+	velocities[x-1][y+2] += amount/2;
+	velocities[x-1][y-2] += amount/2;
+	velocities[x+2][y-1] += amount/2;
+	velocities[x-2][y-1] += amount/2;
+	velocities[x-1][y+2] += amount/2;
+	velocities[x-1][y-2] += amount/2;
 }
 
 void Fluid::wave() {
+	if (rows < 5) {
+		printf("Cannot perform wave with less than 5 rows");
+		return;
+	}
 	for (int i = 0; i < cols-1; i++) {
-		velocities[rows/2][i] += 0.2;
-		velocities[rows/2+1][i] += 0.1;
-		velocities[rows/2-1][i] += 0.1;
-		velocities[rows/2+2][i] -= 0.1;
-		velocities[rows/2-2][i] -= 0.1;
-		velocities[rows/2+3][i] -= 0.1;
-		velocities[rows/2-3][i] -= 0.1;
+		if (heights[rows/2][i] > ground[rows/2][i] + 0.2) {
+			velocities[rows/2][i] += 0.2;
+			velocities[rows/2+1][i] += 0.1;
+			velocities[rows/2-1][i] += 0.1;
+			velocities[rows/2+2][i] -= 0.1;
+			velocities[rows/2-2][i] -= 0.1;
+			velocities[rows/2+3][i] -= 0.1;
+			velocities[rows/2-3][i] -= 0.1;
+		}
 	}
 }
 
@@ -184,6 +226,7 @@ float Fluid::getHeightValue(int x, int y, int selfX, int selfY) {
 	return heights[selfX][selfY];
 }
 void Fluid::calculateSurface() {
+
 	for (int k = 0; k < rows; k++) {
 		heights[k][0] = heights[k][1];
 		heights[k][cols-1] = heights[k][cols-2];
@@ -217,7 +260,7 @@ void Fluid::calculateSurface() {
 		}
 	}
 	calcluateNormals(heights);
-	//printf("sum of velocity is %f\n", totalV);
+//	printf("sum of velocity is %f\n", totalV);
 }
 
 void Fluid::calcluateNormals(float** values) {

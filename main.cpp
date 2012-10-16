@@ -52,6 +52,7 @@ int mouseX, mouseY;
 // Variables for our individual modules
 Fluid* fluidSim;
 bool displayFluid = true, waterFlowing = false;
+int rows = 100, cols = 100;
 
 //Francis ~IK stuff
 bool displayRobot = true;//draw robot arms
@@ -93,7 +94,7 @@ int main(int argc, char** argv)
 
 	// Add individual modules here
 	if (displayFluid) {
-		fluidSim = new Fluid(100, 100);
+		fluidSim = new Fluid(rows, cols);
 	}
 	if (displayRobot) {
 		robot = new Skeleton("robot.asf");
@@ -213,9 +214,13 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 	case 'f':
 		fluidSim->lowerWater();
 		break;
+	// add water to random points
+	case 'o':
+		fluidSim->poorWater();
+		break;
 	// add water to the centre of the pool
 	case 'p':
-		fluidSim->poorWater();
+		fluidSim->poorWater(rows/2, cols/2);
 		break;
 	// make a wave
 	case 'v':

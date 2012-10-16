@@ -38,6 +38,7 @@ public:
 	void calculateSurface();
 	void lowerWater();
 	void poorWater();
+	void poorWater(int, int);
 	void wave();
 	void displayFluid();
 };
