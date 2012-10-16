@@ -23,7 +23,7 @@ Fluid::Fluid(int row, int col) {
 	wavespeed = 0.2;
 	wallheight = 6.0;
 	groundheight = 0.0;
-	waterheight = 3.0;
+	waterheight = (row+col)/((row+col)/8.0);
 	slope = -2.0;
 	rows = row;
 	cols = col;
@@ -261,9 +261,11 @@ void Fluid::displayFluid() {
 
 	glCallList(terrainList);
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //GL_ONE
-	glColor4f(0.2f, 0.5f, 0.7f, 0.5f);
+	if (alpha) {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //GL_ONE
+	}
+	glColor4f(0.2f, 0.5f, 0.7f, 0.5);
 	GLfloat ambient[] = { 0.05, 0.05, 0.03, 1.0 };
 	GLfloat diffuse[] = { 0.114, 0.0284, 0.0284, 1.0 };
 	GLfloat specular[] = {0.002, 0.002, 0.002, 0.5 };
@@ -278,30 +280,83 @@ void Fluid::displayFluid() {
 	glBegin(GL_QUADS);
 	for (int i = 1; i < rows-2; i++) {
 		for (int j = 1; j < cols-2; j++) {
-
-//			glNormal3f(0.0, 1.0, 0.0);
-//			glTexCoord2f(texture1.u/0.2, texture1.v/0.2);
 			glNormal3f(normals[i][j].x, normals[i][j].y, normals[i][j].z);
 			glVertex3f(i, heights[i][j], j);
 
-//			glNormal3f(0.0, 1.0, 0.0);
-//			glTexCoord2f(texture2.u/0.2, texture2.v/0.2);
 			glNormal3f(normals[i+1][j].x, normals[i+1][j].y, normals[i+1][j].z);
 			glVertex3f(i+1, heights[i+1][j], j);
 
-//			glNormal3f(0.0, 1.0, 0.0);
-//			glTexCoord2f(texture3.u/0.2, texture3.v/0.2);
 			glNormal3f(normals[i+1][j+1].x, normals[i+1][j+1].y, normals[i+1][j+1].z);
 			glVertex3f(i+1, heights[i+1][j+1], j+1);
 
-//			glNormal3f(0.0, 1.0, 0.0);
-//			glTexCoord2f(texture3.u/0.2, texture3.v/0.2);
 			glNormal3f(normals[i][j+1].x, normals[i][j+1].y, normals[i][j+1].z);
 			glVertex3f(i, heights[i][j+1], j+1);
 		}
 	}
+	for (int k = 1; k < rows-2; k++) {
+
+		//draw front water
+		glNormal3f(0.0, 1.0, 0.0);
+
+//		glNormal3f(normals[k][1].x, normals[k][1].y, normals[k][1].z);
+		glVertex3f(k, heights[k][1], 1);
+
+//		glNormal3f(normals[k][1].x, normals[k][1].y, normals[k][1].z);
+		glVertex3f(k, ground[k][1], 1);
+
+//		glNormal3f(normals[k+1][1].x, normals[k+1][1].y, normals[k+1][1].z);
+		glVertex3f(k+1, ground[k+1][1], 1);
+
+//		glNormal3f(normals[k+1][1].x, normals[k+1][1].y, normals[k+1][1].z);
+		glVertex3f(k+1, heights[k+1][1], 1);
+
+		// Draw back water
+
+//		glNormal3f(normals[k][cols-2].x, normals[k][cols-2].y, normals[k][cols-2].z);
+		glVertex3f(k, heights[k][cols-2], cols-2);
+
+//		glNormal3f(normals[k][cols-2].x, normals[k][cols-2].y, normals[k][cols-2].z);
+		glVertex3f(k, ground[k][cols-2], cols-2);
+
+//		glNormal3f(normals[k+1][cols-2].x, normals[k+1][cols-2].y, normals[k+1][cols-2].z);
+		glVertex3f(k+1, ground[k+1][cols-2], cols-2);
+
+//		glNormal3f(normals[k+1][cols-2].x, normals[k+1][cols-2].y, normals[k+1][cols-2].z);
+		glVertex3f(k+1, heights[k+1][cols-2], cols-2);
+	}
+	for (int l = 1; l < cols-2; l++) {
+
+		//draw front water
+
+//		glNormal3f(normals[1][l].x, normals[1][l].y, normals[1][l].z);
+		glVertex3f(1, heights[1][l], l);
+
+//		glNormal3f(normals[1][l].x, normals[1][l].y, normals[1][l].z);
+		glVertex3f(1, ground[1][l], l);
+
+//		glNormal3f(normals[1][l+1].x, normals[1][l+1].y, normals[1][l+1].z);
+		glVertex3f(1, ground[1][l+1], l+1);
+
+//		glNormal3f(normals[1][l+1].x, normals[1][l+1].y, normals[1][l+1].z);
+		glVertex3f(1, heights[1][l+1], l+1);
+
+		// Draw back water
+
+//		glNormal3f(normals[rows-2][l].x, normals[rows-2][l].y, normals[rows-2][l].z);
+		glVertex3f(rows-2, heights[rows-2][l], l);
+
+//		glNormal3f(normals[rows-2][l].x, normals[rows-2][l].y, normals[rows-2][l].z);
+		glVertex3f(rows-2, ground[rows-2][l], l);
+
+//		glNormal3f(normals[rows-2][l+1].x, normals[rows-2][l+1].y, normals[rows-2][l+1].z);
+		glVertex3f(rows-2, ground[rows-2][l+1], l+1);
+
+//		glNormal3f(normals[rows-2][l+1].x, normals[rows-2][l+1].y, normals[rows-2][l+1].z);
+		glVertex3f(rows-2, heights[rows-2][l+1], l+1);
+	}
 	glEnd();
-	glDisable(GL_BLEND);
+	if (alpha)
+		glDisable(GL_BLEND);
 	glPopMatrix();
 }
 
@@ -356,65 +411,65 @@ void Fluid::generateTerrain() {
 			}
 		}
 
-		// FRONT WALL
-		glColor3f(0.38, 0.42, 0.32);
-
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f((float)rows-2, 0.0, (float)cols-2);
-
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f(1.0, 0.0, (float)cols-2);
-
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f(1.0, wallheight, (float)cols-2);
-
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f((float)rows-2, wallheight, (float)cols-2);
-
-		// LEFT WALL
-		//glColor3f(0.9, 0.0, 0.9);
-
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f(1.0, 0.0, (float)cols-2);
-
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f(1.0, 0.0, 1.0);
-
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f(1.0, wallheight, 1.0);
-
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f(1.0, wallheight, (float)cols-2);
-
-		// BACK WALL
-		//glColor3f(0.9, 0.9, 0.0);
-
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f(1.0, 0.0, 1.0);
-
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f((float)rows-2, 0.0, 1.0);
-
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f((float)rows-2, wallheight, 1.0);
-
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f(1.0, wallheight, 1.0);
-
-		// RIGHT WALL
-		//glColor3f(0.9, 0.0, 0.0);
-
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f((float)rows-2, 0.0, (float)cols-2);
-
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f((float)rows-2, 0.0, 1.0);
-
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f((float)rows-2, wallheight, 1.0);
-
-		glNormal3f(0.0, 1.0, 0.0);
-		glVertex3f((float)rows-2, wallheight, (float)cols-2);
+//		// FRONT WALL
+//		glColor3f(0.48, 0.52, 0.42);
+//
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f((float)rows-2, 0.0, (float)cols-2);
+//
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f(1.0, 0.0, (float)cols-2);
+//
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f(1.0, wallheight, (float)cols-2);
+//
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f((float)rows-2, wallheight, (float)cols-2);
+//
+//		// LEFT WALL
+//		//glColor3f(0.9, 0.0, 0.9);
+//
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f(1.0, 0.0, (float)cols-2);
+//
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f(1.0, 0.0, 1.0);
+//
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f(1.0, wallheight, 1.0);
+//
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f(1.0, wallheight, (float)cols-2);
+//
+//		// BACK WALL
+//		//glColor3f(0.9, 0.9, 0.0);
+//
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f(1.0, 0.0, 1.0);
+//
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f((float)rows-2, 0.0, 1.0);
+//
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f((float)rows-2, wallheight, 1.0);
+//
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f(1.0, wallheight, 1.0);
+//
+//		// RIGHT WALL
+//		//glColor3f(0.9, 0.0, 0.0);
+//
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f((float)rows-2, 0.0, (float)cols-2);
+//
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f((float)rows-2, 0.0, 1.0);
+//
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f((float)rows-2, wallheight, 1.0);
+//
+//		glNormal3f(0.0, 1.0, 0.0);
+//		glVertex3f((float)rows-2, wallheight, (float)cols-2);
 
 	glEnd();
 	glEndList();

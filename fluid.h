@@ -28,7 +28,7 @@ private:
 	void checkGroundHit(int, int);
 
 public:
-	bool glInited;
+	bool glInited, alpha;
 	void glInit();
 	Fluid(int, int);
 	~Fluid();

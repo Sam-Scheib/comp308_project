@@ -221,20 +221,36 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 	case 'v':
 		fluidSim->wave();
 		break;
+	// toggle alpha of water
+	case 'z':
+		fluidSim->alpha = !fluidSim->alpha;
+		break;
 	//
 	// wasd controls for camera movement
 	//
+	// zoom in
 	case 'w':
-		zooming(-0.2);
+		zooming(-1.0);
 		break;
+	// zoom out
 	case 's':
-		zooming(0.2);
+		zooming(1.0);
 		break;
+	// pan up
+	case 'e':
+		panning(0.0, 1.0);
+		break;
+	// pan down
+	case 'q':
+		panning(0.0, -1.0);
+		break;
+	// pan left
 	case 'a':
-		panning(0.2, 0);
+		panning(1.0, 0.0);
 		break;
+	// pan right
 	case 'd':
-		panning(-0.2, 0);
+		panning(-1.0, 0.0);
 		break;
 
 //	case 'f':
@@ -246,28 +262,28 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 	//	break;
 
 	// Old lighting controls
-	case 'e':
-		spotCutoff += 1.0;
-		if (spotCutoff > 90)
-			spotCutoff = 90;
-		break;
-	case 'q':
-		spotCutoff -= 1.0;
-		if (spotCutoff < 1)
-			spotCutoff = 1;
-		break;
-	case 'i':
-		spotXAngle -= 1.0;
-		break;
-	case 'k':
-		spotXAngle += 1.0;
-		break;
-	case 'j':
-		spotYAngle -= 1.0;
-		break;
-	case 'l':
-		spotYAngle += 1.0;
-		break;
+//	case 'e':
+//		spotCutoff += 1.0;
+//		if (spotCutoff > 90)
+//			spotCutoff = 90;
+//		break;
+//	case 'q':
+//		spotCutoff -= 1.0;
+//		if (spotCutoff < 1)
+//			spotCutoff = 1;
+//		break;
+//	case 'i':
+//		spotXAngle -= 1.0;
+//		break;
+//	case 'k':
+//		spotXAngle += 1.0;
+//		break;
+//	case 'j':
+//		spotYAngle -= 1.0;
+//		break;
+//	case 'l':
+//		spotYAngle += 1.0;
+//		break;
 	}
 
 	glutPostRedisplay();
@@ -326,12 +342,13 @@ void G308_mouseMovement(int x, int y) {
 //	printf("top before %f %f %f\n", top.x, top.y, top.z);
 	if(lookActive) {
 		float matrix[16];
+		G308_Point yAxis = {0.0, 1.0, 0.0};
 		G308_Point directionVector = {center.x-eye.x, center.y-eye.y, center.z-eye.z};
 		G308_Point temp = directionVector;
 		temp = crossProduct(temp, top);
 		temp = normalise(temp);
 		quaternion up = quaternion((mouseY-y)/20.0, temp);
-		quaternion side = quaternion((mouseX-x)/20.0, top);
+		quaternion side = quaternion((mouseX-x)/20.0, yAxis);
 		quaternion q = up * side;
 		q.toMatrix(matrix);
 		G308_Point newVector = getNewPoint(directionVector, matrix);
@@ -340,7 +357,7 @@ void G308_mouseMovement(int x, int y) {
 		center.z = eye.z + newVector.z;
 
 		up.toMatrix(matrix);
-		newVector = getNewPoint(top, matrix);
+		newVector = getNewPoint(yAxis, matrix);
 		top.x = newVector.x;
 		top.y = newVector.y;
 		top.z = newVector.z;
