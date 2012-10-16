@@ -133,6 +133,10 @@ void G308_Display()
 		fluidSim->displayFluid();
 	}
 
+	if(displayRobot) {
+		robot->display();
+	}
+
 
 
 //	SpotLight();

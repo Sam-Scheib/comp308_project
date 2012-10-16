@@ -18,15 +18,15 @@
   begin
      id 1 
      name arm_one
-     direction 0.692024 -0.648617 0.316857 
+     direction 1 0 0
      length 2.68184 
      axis 0 0 0  XYZ
   end
   begin
      id 2 
      name arm_two
-     direction 0.34202 -0.939693 0  
-     length 6.92462  
+     direction 1 0 0  
+     length 1 0 0
      axis 0 0 20  XYZ
     dof rx ry rz
     limits (-160.0 20.0)
@@ -36,7 +36,7 @@
   begin
      id 3 
      name arm_three
-     direction 0.34202 -0.939693 0   
+     direction 1 0 0
      length 7.40507   
      axis 0 0 20   XYZ
     dof rx
@@ -45,7 +45,7 @@
   begin
      id 4 
      name arm_four
-     direction 0.079671 -0.218894 0.972491   
+     direction 1 0 0
      length 2.00008   
      axis -90 7.62852e-016 20   XYZ
     dof rx rz

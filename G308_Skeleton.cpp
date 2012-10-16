@@ -23,8 +23,7 @@
 #include <fstream>
 #include "define.h"
 
-using namespace std;
-
+//#define M_PI 3.14
 //takes a filename for an asf file
 Skeleton::Skeleton(char* filename) {
 	//set up defaults
@@ -74,6 +73,8 @@ Skeleton::Skeleton(char* filename) {
 		B_DATA[i].bone_id = root[i].id;
 		//null parent link
 		B_DATA[i].parent = NULL;
+		//empty quats in
+		B_DATA[i].B_ROT = quaternion(0, 0, 0, 0);
 	}
 	//generate child structure by going through bones again
 	//and adding all as per the bone array, as well as that
@@ -88,7 +89,7 @@ Skeleton::Skeleton(char* filename) {
 			child = find_IK_Rotation(current_bone.children[j]->id);
 			B_DATA[i].children[j] = child;
 			child->parent = &B_DATA[i];
-			printf("%d %d", child->B_POS.x, child->B_POS.y);
+			printf("%f %f", child->B_POS.x, child->B_POS.y);
 		}
 	}
 }
@@ -159,7 +160,7 @@ void Skeleton::display() {
 	}
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	glScalef(0.05, 0.05, 0.05);
+	//glScalef(0.05, 0.05, 0.05);
 
 	GLUquadric* quad = gluNewQuadric(); //Create a new quadric to allow you to draw cylinders
 	if (quad == 0) {
@@ -318,7 +319,7 @@ void Skeleton::updateAnimation(bone* current) {
 	GLfloat f[16];
 	//int id = current->id;
 	quaternion* q = NULL;
-	getRotation(current->id, q);
+	q = getRotation(current->id);
 	q->toMatrix(f);
 	glMultMatrixf(f);
 	return;
@@ -344,14 +345,12 @@ bone* Skeleton::findBone(char * name) {
 /**
  * Get the rotation for the bone given by the bone_id
  */
-int Skeleton::getRotation(int bone_id, quaternion* q) {
+quaternion* Skeleton::getRotation(int bone_id) {
 	for (int i = 0; i<NUM_BONES; i++) {
 		if (B_DATA[i].bone_id == bone_id) {
-			q =  &B_DATA[i].B_ROT;
-			return 1;
+			return &(B_DATA[i].B_ROT);
 		}
 	}
-	return 0;
 }
 
 /**

@@ -137,7 +137,7 @@ public:
 	//return a quaternion that is the current angle of the bone given
 	//by bone_id, this will also increase the rotation of that angle
 	//for the next call
-	int getRotation(int bone_id, quaternion* q);
+	quaternion* getRotation(int bone_id);
 
 	//attempt to generate a solution for this end goal and effector pair
 	void solveIK(G308_Point Goal, bone* end_effector);
