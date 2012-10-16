@@ -42,8 +42,8 @@ float spotXAngle = 266.0, spotYAngle = 59.0;
 
 // Camera variables
 float radius = 300.0;
-G308_Point eye = {0.0, 0.0, 1.0};
-G308_Point center = {0.0, 0.0, 0.0};
+G308_Point eye = {0.0, 20.0, -80.0};
+G308_Point center = {0.0, 20.0, -79.0};
 G308_Point top = {0.0, 1.0, 0.0};
 
 bool lookActive = false, panningActive = false,zoomActive = false;
@@ -96,6 +96,8 @@ int main(int argc, char** argv)
 	glutMouseFunc(G308_mouseListener);
 	glutMotionFunc(G308_mouseMovement);
 
+	// angle camera down
+	G308_mouseMovement(0, 20);
 
 	// Add individual modules here
 	if (displayFluid) {
@@ -245,6 +247,10 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 	case 'o':
 		fluidSim->poorWater();
 		break;
+	// add water to center
+	case 'p':
+		fluidSim->poorWater(rows/2, cols/2);
+		break;
 		// make a wave
 	case 'v':
 		fluidSim->wave();
@@ -274,7 +280,7 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		panning(-1.0, 0.0);
 		break;
 
-	case 'p':
+	case '1':
 		robot->step = 0;
 		break;
 		
