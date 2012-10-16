@@ -74,7 +74,7 @@ void SpotLight();
 
 int main(int argc, char** argv)
 {
-	if(argc != 1){
+s	if(argc != 1){
 		printf("run without arguments:\n./Assign5\n");
 		exit(EXIT_FAILURE);
 	}
@@ -260,6 +260,10 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 
 	case 'p':
 		robot->step = 0;
+		break;
+
+	case 'l':
+		goal.z = goal.z+10;
 		break;
 		//	case 'f':
 

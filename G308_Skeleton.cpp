@@ -136,6 +136,7 @@ void Skeleton::calculateInitialPositions(bone* currentBone) {
 
 	glPushMatrix();
 	if (currentBone->id == 0 ) {
+		glLoadIdentity();
 		glTranslatef(default_pos.x, default_pos.y, default_pos.z);
 	}
 	//YOUR CODE GOES HERE
@@ -167,6 +168,7 @@ void Skeleton::calculatePositions(bone* currentBone) {
 	}
 	glPushMatrix();
 	if (currentBone->id == 0 ) {
+		glLoadIdentity();
 		glTranslatef(default_pos.x, default_pos.y, default_pos.z);
 	}
 
@@ -406,7 +408,7 @@ void Skeleton::solveIK(G308_Point goal, bone* end_effector) {
 	//find an angle of rotation around cur_rot_points position that brings
 	//end effector closest to our goal
 	angle = calculateRotation(goal, curr_rot_point->B_POS, bone_data->B_POS);
-	curr_rot_point->B_ROT = curr_rot_point->B_ROT * angle;
+	curr_rot_point->B_ROT = angle;
 	//bone* currentbone = findBone(cur_rot_point->bone_id);
 	calculatePositions(root);
 	for (int i = 0; i<NUM_BONES; i++) {
@@ -459,12 +461,13 @@ void Skeleton::applyRotation(GLfloat* matrix, IK_Rotation* bone_data, G308_Point
 quaternion Skeleton::calculateRotation(G308_Point goal, G308_Point rot_point, G308_Point end) {
 	//we are currently doing this without thinking about DOF constraints
 	//vector from rotation point to goal point
+	//first we calc x amount
 	printf("goal point!: %f, %f, %f\n", goal.x, goal.y, goal.z);
 	printf("rotation point: %f, %f, %f\n", rot_point.x, rot_point.y, rot_point.z);
 	printf("end effector: %f, %f, %f\n", end.x, end.y, end.z);
-	G308_Point goal_rot = subtract(goal, rot_point);
+	G308_Point goal_rot = subtract(rot_point, goal);
 	//vector from rotation point to end effector
-	G308_Point rot_end = subtract(end, rot_point);
+	G308_Point rot_end = subtract(rot_point, end);
 	printf("Vector goal rot(%f, %f, %f)\n", goal_rot.x, goal_rot.y, goal_rot.z);
 	printf("Vector end_rot(%f, %f, %f)\n", rot_end.x, rot_end.y, rot_end.z);
 	//angle and axis thats being rotated around
