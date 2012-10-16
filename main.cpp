@@ -59,7 +59,10 @@ bool displayRobot = true;//draw robot arms
 bool calculateIK = false;//calculate ik values
 bool is_paused = false;
 Skeleton* robot;//pointer to our robot arm
-G308_Point goal {-30, -10, -30};
+Skeleton* robot1;//wave gen!
+Skeleton* robot2; //wave gen!
+//goal for moveable guy!
+G308_Point goal {-30, 20, -30};
 
 void G308_keyboardListener(unsigned char, int, int);
 void G308_mouseListener(int, int, int, int);
@@ -99,7 +102,10 @@ int main(int argc, char** argv)
 		fluidSim = new Fluid(rows, cols);
 	}
 	if (displayRobot) {
-		robot = new Skeleton("robot.asf", {-40, -20, -40});
+		robot = new Skeleton("robot.asf", {-50, 10, -50});
+		robot1 = new Skeleton("robot.asf", {(rows/2), 1, cols+4});
+		robot2 = new Skeleton("robot.asf", {(rows/2) 1, -4});
+		robot1->setIterations(40);
 		robot->setIterations(40);
 	}
 
@@ -150,6 +156,11 @@ void G308_Display()
 		glPushMatrix();
 		glTranslatef(goal.x, goal.y, goal.z);
 		glutSolidSphere(0.4, 5, 5);
+		glPopMatrix();
+		glPushMatrix();
+		robot1->step = 0;
+		robot1->setEndEffector(4, {rows/2, 0,cols}); //call this method
+		robot1->display();
 		glPopMatrix();
 
 	}
