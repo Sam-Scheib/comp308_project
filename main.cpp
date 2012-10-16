@@ -162,10 +162,12 @@ void G308_Display()
 		glPopMatrix();
 		glPushMatrix();
 		robot1->step = 0;
-		robot1->setEndEffector(4, {rows/2, fluidSim->getTopWavePoint(),cols-1}); //call this method
+		robot1->setEndEffector(4, {rows/2, fluidSim->getTopWavePoint(),cols-3}); //call this method
+		//printf("top %f\n", fluidSim->getTopWavePoint());
 		robot1->display();
 		robot2->step = 0;
-		robot2->setEndEffector(4, {rows/2, fluidSim->getBottomWavePoint(),1});
+		robot2->setEndEffector(4, {rows/2, fluidSim->getBottomWavePoint(),3});
+		//printf("bottom")
 		robot2->display();
 		glPopMatrix();
 
@@ -239,6 +241,8 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		// randomise the heights of the water
 	case 'r':
 		fluidSim->randomiseHeights();
+		robot1->reset_angles();
+		robot2->reset_angles();
 		break;
 		// randomise terrain
 	case 'b':

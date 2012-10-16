@@ -153,6 +153,7 @@ public:
 	void setIterations(int i);
 	//attempt to generate a solution for this end goal and effector pair
 	void solveIK(G308_Point Goal, bone* end_effector);
+	void reset_angles();
 };
 
 

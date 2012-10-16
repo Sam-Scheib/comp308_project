@@ -372,6 +372,18 @@ quaternion* Skeleton::getRotation(int bone_id) {
 		}
 	}
 }
+
+void Skeleton::reset_angles() {
+	G308_Point x_axis= {1, 0, 0};
+	for(int i = 0; i<NUM_BONES; i++) {
+		B_DATA[i].B_ROT = quaternion(0, x_axis);
+	}
+	calculatePositions(root);
+	for (int i = 0; i<NUM_BONES; i++) {
+		//zero Bone position for each Bone Data struct
+		B_DATA[i].B_POS = root[i].pos;
+	}
+}
 void Skeleton::setIterations(int i) {
 	iterations = i;
 }
@@ -398,10 +410,10 @@ void Skeleton::solveIK(G308_Point goal, bone* end_effector) {
 	}
 	for (int i = 0; i< iterations ||complete; i++) {
 		float dist = vector_length(subtract(goal, bone_data->B_POS));
-		if(dist < DIST_DELTA) {
-			//if we are within distance we break the loop
-			complete = true;
-		}
+//		if(dist < DIST_DELTA) {
+//			//if we are within distance we break the loop
+//			complete = true;
+//		}
 		//double check as we don't want to move root around
 		if (curr_rot_point->parent->parent==NULL || complete) {
 			animationExists = true;
