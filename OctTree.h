@@ -5,29 +5,31 @@
  *      Author: whyteferg
  */
 
-#ifndef OCTTREE_H_
-#define OCTTREE_H_
 
+#include <set>
+#include "ball.h"
+
+using namespace std;
 
 
 class OctTree {
 public:
-	const int MAX_TREE_DEPTH = 6;
-	const int MIN_OBJ_PERTREE = 3;
-	const int MAX_OBJ_PERTREE = 6;
+	OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize);
 	G308_Point LowerLeftCorner;
 	G308_Point UpperRightcorner;
 	G308_Point center;
 	G308_Point faceNormal;
 	bool childrenpresent;
 	bool surfaceNode;
-
+	set<ball*> balls;
 	OctTree *children[2][2][2];
 
-
-	void add();
+	void whichchildren(ball* ball,bool addflag);
+	void remove(ball*);
+	void splitSelf();
+	void add(ball* ball);
 	void renderTree();
-	OctTree();
+
 	virtual ~OctTree();
 
 

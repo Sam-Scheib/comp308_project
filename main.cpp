@@ -20,6 +20,7 @@
 #include <GL/glut.h>
 #include <math.h>
 
+
 // My definition 
 #include "define.h"
 #include "quaternion.h"
@@ -28,6 +29,9 @@
 
 //defines for ik
 #include "G308_Skeleton.h"
+
+//Defines for balls
+#include "OctTree.h"
 
 // Global variables
 GLuint g_mainWnd;
@@ -50,8 +54,12 @@ bool lookActive = false, panningActive = false,zoomActive = false;
 int mouseX, mouseY;
 
 // Variables for our individual modules
+OctTree* ballSim;
+bool displayBalls=true;
+
+
 Fluid* fluidSim;
-bool displayFluid = true, waterFlowing = false;
+bool displayFluid = false, waterFlowing = false;
 
 //Francis ~IK stuff
 bool displayRobot = true;//draw robot arms
@@ -131,6 +139,12 @@ void G308_Display()
 		if (waterFlowing)
 			fluidSim->calculateSurface();
 		fluidSim->displayFluid();
+	}
+
+	if(displayBalls){
+		//ballSim = new OctTree();
+
+
 	}
 
 
