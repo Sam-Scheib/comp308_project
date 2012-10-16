@@ -415,9 +415,9 @@ void G308_Reshape(int w, int h)
 // Set Light
 void G308_SetLight()
 {
-	float pointPosition[] = {0.0f, 2.0f, 5.0f, 1.0f};
-	float directionalPosition[] = {0.0f, 0.0f, 1.0f, 0.0f};
-	float ambientPosition[] = {0.0f, 10.0f, 10.0f, 1.0f};
+	float pointPosition[] = {0.0f, 10.0f, 5.0f, 1.0f};
+	float directionalPosition[] = {0.4f, 0.8f, 0.7f, 0.0f};
+	float ambientPosition[] = {0.0f, 20.0f, 10.0f, 1.0f};
 	float direction[] = {0.4f, -1.0f, 0.4f};
 	float diffintensity[] = {0.3f, 0.3f, 0.3f, 1.0f};
 	float ambient[] = {0.2f, 0.2f, 0.2f, 1.0f};
