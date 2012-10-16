@@ -258,9 +258,6 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		panning(-1.0, 0.0);
 		break;
 
-	case 'p':
-		robot->step = 0;
-		break;
 		//	case 'f':
 
 		//Reserved, Fires balls
