@@ -68,7 +68,7 @@ void trim(char**);
 class Skeleton {
 private:
 	G308_Point default_pos;
-	int step;
+	IK_Rotation* curr_rot_point;
 	int maxBones, m_numFrames;
 	bone* root;
 	float camRotation;
@@ -134,6 +134,7 @@ public:
 	float rootRotation;
 	int numBones, selectedBone, selectedAxis;
 	float angle;
+	int step;
 	//find a bone by name
 	bone* findBone(char*);
 	bone* findBone(int);

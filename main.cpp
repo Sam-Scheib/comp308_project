@@ -57,7 +57,7 @@ bool displayFluid = true, waterFlowing = false;
 bool displayRobot = true;//draw robot arms
 bool calculateIK = false;//calculate ik values
 Skeleton* robot;//pointer to our robot arm
-G308_Point goal {25, 0, -100};
+G308_Point goal {25, 0, -10};
 
 void G308_keyboardListener(unsigned char, int, int);
 void G308_mouseListener(int, int, int, int);
@@ -135,23 +135,16 @@ void G308_Display()
 	}
 
 	if(displayRobot) {
+		glPushMatrix();
+		robot->setEndEffector(3, goal);
+		glPopMatrix();
+		glPushMatrix();
 		robot->display();
-		/*
-		 * Okay so the problem I seem to be having is that
-		 * moving the camera changes the world and yet the goal
-		 * pos wasn't updated, so we do this hack which is crazy
-		 * don't even ask me man
-		 */
+		glPopMatrix();
 		glPushMatrix();
 		glTranslatef(goal.x, goal.y, goal.z);
-		GLfloat f[16];
-		//save our position at this point
-		glGetFloatv(GL_MODELVIEW_MATRIX, f);
-		//f now has the state of the model view
-		G308_Point result = {f[12], f[13], f[14]};
 		glutSolidSphere(0.4, 5, 5);
 		glPopMatrix();
-		robot->setEndEffector(3, goal);
 
 	}
 
@@ -255,6 +248,9 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		panning(-0.2, 0);
 		break;
 
+	case 'o':
+		robot->step = 0;
+		break;
 		//	case 'f':
 
 		//Reserved, Fires balls
