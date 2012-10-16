@@ -1,0 +1,62 @@
+# AST/ASF file generated using VICON BodyLanguage
+# -----------------------------------------------
+:version 1.10
+:name VICON
+:units
+  mass 1.0
+  length 0.45
+  angle deg
+:documentation
+   .ast/.asf automatically generated from VICON data using
+   VICON BodyBuilder and BodyLanguage model FoxedUp or BRILLIANT.MOD
+:root
+   order TX TY TZ RX RY RZ
+   axis XYZ
+   position 0 0 0  
+   orientation 0 0 0 
+:bonedata
+  begin
+     id 1 
+     name arm_one
+     direction 0.692024 -0.648617 0.316857 
+     length 2.68184 
+     axis 0 0 0  XYZ
+  end
+  begin
+     id 2 
+     name arm_two
+     direction 0.34202 -0.939693 0  
+     length 6.92462  
+     axis 0 0 20  XYZ
+    dof rx ry rz
+    limits (-160.0 20.0)
+           (-70.0 70.0)
+           (-60.0 70.0)
+  end
+  begin
+     id 3 
+     name arm_three
+     direction 0.34202 -0.939693 0   
+     length 7.40507   
+     axis 0 0 20   XYZ
+    dof rx
+    limits (-10.0 170.0)
+  end
+  begin
+     id 4 
+     name arm_four
+     direction 0.079671 -0.218894 0.972491   
+     length 2.00008   
+     axis -90 7.62852e-016 20   XYZ
+    dof rx rz
+    limits (-45.0 90.0)
+           (-70.0 20.0)
+  end
+  
+:hierarchy
+  begin
+    root arm_one
+    arm_one arm_two
+    arm_two arm_three
+    arm_three arm_four
+  end

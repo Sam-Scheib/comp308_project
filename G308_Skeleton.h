@@ -111,7 +111,7 @@ private:
 	quaternion calculateRotation(G308_Point goal, G308_Point rot_point, G308_Point end);
 
 	//given a bone pointer, find the IK_Rotation that matches that bone's id
-	int find_IK_Rotation(int bone_id, IK_Rotation*);
+	IK_Rotation* find_IK_Rotation(int bone_id);
 
 	//return a vector representing teh vector p rotated by matrix matrix
 	G308_Point getRotatedVector(G308_Point p, float* matrix);
@@ -141,7 +141,6 @@ public:
 
 	//attempt to generate a solution for this end goal and effector pair
 	void solveIK(G308_Point Goal, bone* end_effector);
-
 };
 
 

@@ -59,7 +59,7 @@ Skeleton::Skeleton(char* filename) {
 	readASF(filename);
 	//generate intial positions
 	calculatePositions(root);
-	NUM_BONES = ROBOT->numBones;
+	NUM_BONES = numBones;
 
 	//Delta of distance to the end point to finish on
 	DIST_DELTA = 0.1f;
@@ -83,13 +83,14 @@ Skeleton::Skeleton(char* filename) {
 		bone current_bone = root[i];
 		for(int j = 0; j<current_bone.numChildren; j++) {
 			B_DATA[i].num_children = current_bone.numChildren;
+			B_DATA[i].children = (IK_Rotation**) malloc(sizeof(IK_Rotation*)*B_DATA[i].num_children);
 			IK_Rotation* child;
-			find_IK_Rotation(current_bone.children[j]->id, child);
+			child = find_IK_Rotation(current_bone.children[j]->id);
 			B_DATA[i].children[j] = child;
 			child->parent = &B_DATA[i];
+			printf("%d %d", child->B_POS.x, child->B_POS.y);
 		}
 	}
-
 }
 
 Skeleton::~Skeleton() {
@@ -97,6 +98,7 @@ Skeleton::~Skeleton() {
 }
 
 void Skeleton::deleteBones(bone* root) {
+	free(B_DATA);
 	for (int i = 0; i < maxBones; i++) {
 		if (root[i].name != NULL) {
 			free(root[i].name);
@@ -118,20 +120,21 @@ void Skeleton::calculatePositions(bone* currentBone) {
 		return;
 	}
 	//YOUR CODE GOES HERE
-	//first align local axis
 	glPushMatrix();
-	GLfloat *f;
-	root->rotation.toMatrix(f);
-	glMultMatrixf(f);
+	GLfloat f[16];
+	//Depreciated
+	//root->rotation.toMatrix(f);
+	//glMultMatrixf(f);
 
 	//if any animations are loaded we should apply the
 	//rotations and translations to each bone here
-	updateAnimation(currentBone);
+//	updateAnimation(currentBone);
 
 	//undo axis transforms as they are not
 	//applied to bone drawing or translations
-	root->rotation.multiplicativeInverse().toMatrix(f);
-	glMultMatrixf(f);
+	//Depreciated
+	//root->rotation.multiplicativeInverse().toMatrix(f);
+	//glMultMatrixf(f);
 
 	//save our position at this point
 	 glGetFloatv(GL_MODELVIEW_MATRIX, f);
@@ -148,6 +151,7 @@ void Skeleton::calculatePositions(bone* currentBone) {
 	}
 	glPopMatrix();
 }
+
 // [Assignment2] you may need to revise this function
 void Skeleton::display() {
 	if (root == NULL) {
@@ -196,12 +200,9 @@ void Skeleton::displayNormal(bone* currentBone, GLUquadric* q) {
 	//YOUR CODE GOES HERE
 	//first align local axis
 	glPushMatrix();
-	//	glRotatef(root->rotation., 0,0,1);
-	//	glRotatef(root->roty, 0,1,0);
-	//	glRotatef(root->rotx, 1,0,0);
 
 	//apply result
-	GLfloat *f;
+	GLfloat f[16];
 	root->rotation.toMatrix(f);
 	glMultMatrixf(f);
 
@@ -315,13 +316,11 @@ void Skeleton::drawMagicalBone(bone* root, GLUquadric* q) {
 //apply any animations found in the postures 2d vector!
 void Skeleton::updateAnimation(bone* current) {
 	GLfloat f[16];
-	int id = current->id;
-	//m_Postures[frame_ctrl->current_frame()].bone_rot_q[current->id].toMatrix(f);
-	//glMultMatrixf(f);
-	//rotate by mouse and camera amounts
-	//glRotatef(currentZ, 0, 0, 1);
-	//glRotatef(currentY, 0, 1, 0);
-	//glRotatef(currentX, 1, 0, 0);
+	//int id = current->id;
+	quaternion* q = NULL;
+	getRotation(current->id, q);
+	q->toMatrix(f);
+	glMultMatrixf(f);
 	return;
 }
 
@@ -359,8 +358,8 @@ int Skeleton::getRotation(int bone_id, quaternion* q) {
  * Attempt to generate a solution for the given end point
  */
 void Skeleton::solveIK(G308_Point goal, bone* end_effector) {
-	IK_Rotation* bone_data;
-	find_IK_Rotation(end_effector->id, bone_data);
+	IK_Rotation* bone_data = NULL;
+	bone_data = find_IK_Rotation(end_effector->id);
 	IK_Rotation* cur_rot_point = bone_data;
 	quaternion angle;
 	bool complete = false;
@@ -392,11 +391,11 @@ void Skeleton::solveIK(G308_Point goal, bone* end_effector) {
 }
 
 //Private Methods:
-int Skeleton::find_IK_Rotation(int bone_id, IK_Rotation* result) {
+IK_Rotation* Skeleton::find_IK_Rotation(int bone_id) {
 	for (int i = 0; i<NUM_BONES; i++) {
 		if (B_DATA[i].bone_id == bone_id) {
-			result = &B_DATA[i];
-			return 1;
+			return &(B_DATA[i]);
+
 		}
 	}
 	return 0;
@@ -577,7 +576,6 @@ void Skeleton::readHeading(char* buff, FILE* file) {
 	} else if (strcmp(head, "root") == 0) {
 		//Read in information about root
 		//Or be lazy and just assume it is going to be the normal CMU thing!
-		//TODO !SO NAUGHTY ~francis
 	} else if (strcmp(head, "bonedata") == 0) {
 		//Description of each bone
 		//This does need to actually be read :(
@@ -737,18 +735,17 @@ void Skeleton::readBone(char* buff, FILE* file) {
 					t.y = 0;
 					t.z = 0;
 					quaternion q_x(x, t);
-					q_x.print();
+					//q_x.print();
 					t.x = 0;
 					t.y = 1;
 					quaternion q_y(y, t);
-					q_y.print();
+					//q_y.print();
 					t.y = 0;
 					t.z = 1;
 					quaternion q_z(z, t);
-					q_z.print();
+					//q_z.print();
 
 					quaternion complete = q_x * q_y * q_z;
-					complete.print();
 					root[numBones].rotation= complete;
 				}
 				//There are more things but they are not needed for the core

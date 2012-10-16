@@ -96,7 +96,7 @@ int main(int argc, char** argv)
 		fluidSim = new Fluid(100, 100);
 	}
 	if (displayRobot) {
-		//pass for now
+		robot = new Skeleton("robot.asf");
 	}
 
 
