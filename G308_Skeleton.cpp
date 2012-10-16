@@ -28,11 +28,16 @@
 Skeleton::Skeleton(char* filename) {
 	G308_Point x_axis = {1, 0, 0};
 	//set up defaults
+	default_pos = {0, 0, -100};
+	stored_axis = {0, 0, 0};
+	stored_angle = 0;
 	numBones = 1;
+	step = 0;
 	maxBones = 60;
 	angle = 0;
 	selectedAxis = -1;
 	selectedBone = -1;
+	animationExists = false;
 	root = (bone*) malloc(sizeof(bone) * maxBones);
 	for (int i = 0; i < maxBones; i++) {
 		root[i].numChildren = 0;
@@ -58,11 +63,12 @@ Skeleton::Skeleton(char* filename) {
 	root[0].dof = DOF_ROOT;
 	readASF(filename);
 	//generate intial positions
-	calculatePositions(root);
 	NUM_BONES = numBones;
+	calculateInitialPositions(root);
+
 
 	//Delta of distance to the end point to finish on
-	DIST_DELTA = 0.1f;
+	DIST_DELTA = 0.4f;
 
 	//Initialise our Bone_Data array
 	B_DATA = (IK_Rotation*) malloc(sizeof(IK_Rotation) * NUM_BONES);
@@ -90,7 +96,7 @@ Skeleton::Skeleton(char* filename) {
 			child = find_IK_Rotation(current_bone.children[j]->id);
 			B_DATA[i].children[j] = child;
 			child->parent = &B_DATA[i];
-			printf("%f %f", child->B_POS.x, child->B_POS.y);
+			//printf("%f %f", child->B_POS.x, child->B_POS.y);
 		}
 	}
 }
@@ -123,6 +129,34 @@ void Skeleton::deleteBones(bone* root) {
 	free(root);
 }
 
+void Skeleton::calculateInitialPositions(bone* currentBone) {
+	if (currentBone == NULL) {
+		return;
+	}
+
+	glPushMatrix();
+	if (currentBone->id == 0 ) {
+		glTranslatef(default_pos.x, default_pos.y, default_pos.z);
+	}
+	//YOUR CODE GOES HERE
+	GLfloat f[16];
+	//updateAnimation(currentBone);
+	//save our position at this point
+	glGetFloatv(GL_MODELVIEW_MATRIX, f);
+	//f now has the state of the model view
+	currentBone->pos = {f[12], f[13], f[14]};
+	//translate to new location from current
+	glTranslatef(currentBone->dir.x*currentBone->length, currentBone->dir.y*currentBone->length, currentBone->dir.z*currentBone->length);
+
+	//draw children at updated position
+	//it's important to note that any rotations made earlier that are not explicitly
+	//undone will be passed on to children
+	for (int i=0;i<currentBone->numChildren; i++) {
+		calculateInitialPositions(currentBone->children[i]);
+	}
+	glPopMatrix();
+}
+
 /**
  * Like a draw but doesn't actually display anything, just calculates the position
  * of each bone at this point in time
@@ -131,27 +165,18 @@ void Skeleton::calculatePositions(bone* currentBone) {
 	if (currentBone == NULL) {
 		return;
 	}
-	//YOUR CODE GOES HERE
 	glPushMatrix();
+	if (currentBone->id == 0 ) {
+		glTranslatef(default_pos.x, default_pos.y, default_pos.z);
+	}
+
 	GLfloat f[16];
-	//Depreciated
-	//root->rotation.toMatrix(f);
-	//glMultMatrixf(f);
-
-	//if any animations are loaded we should apply the
-	//rotations and translations to each bone here
-//	updateAnimation(currentBone);
-
-	//undo axis transforms as they are not
-	//applied to bone drawing or translations
-	//Depreciated
-	//root->rotation.multiplicativeInverse().toMatrix(f);
-	//glMultMatrixf(f);
+	updateAnimation(currentBone);
 
 	//save our position at this point
-	 glGetFloatv(GL_MODELVIEW_MATRIX, f);
-	 //f now has the state of the model view
-	 currentBone->pos = {f[12], f[13], f[14]};
+	glGetFloatv(GL_MODELVIEW_MATRIX, f);
+	//f now has the state of the model view
+	currentBone->pos = {f[12], f[13], f[14]};
 	//translate to new location from current
 	glTranslatef(currentBone->dir.x*currentBone->length, currentBone->dir.y*currentBone->length, currentBone->dir.z*currentBone->length);
 
@@ -169,30 +194,17 @@ void Skeleton::display() {
 	if (root == NULL) {
 		return;
 	}
+
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
+	glTranslatef(default_pos.x, default_pos.y, default_pos.z);
 	//glScalef(0.05, 0.05, 0.05);
-
 	GLUquadric* quad = gluNewQuadric(); //Create a new quadric to allow you to draw cylinders
 	if (quad == 0) {
 		printf("Not enough memory to allocate space to draw\n");
 		exit(EXIT_FAILURE);
 	}
 
-	//if r has been pressed we update root
-	if (rootRotation) {
-		float y = root->currentCamRotation;
-		y = y+5;
-		if (y > 360) {
-			y = 0+(y-360);//clamp max
-		}
-		else if (y < 0 ) {
-			y = 360-(0-y);//clamp min
-		}
-		root->currentCamRotation = y;
-		printf("Rotated:%f\n", y);
-		rootRotation = 0;
-	}
 	//do the display drawing of the item
 	//if the state is one do a colour draw
 	//for picking and selection
@@ -209,45 +221,23 @@ void Skeleton::displayNormal(bone* currentBone, GLUquadric* q) {
 	if (currentBone == NULL) {
 		return;
 	}
-	//YOUR CODE GOES HERE
-	//first align local axis
 	glPushMatrix();
 
-	//apply result
-	GLfloat f[16];
-//	root->rotation.toMatrix(f);
-//	glMultMatrixf(f);
-
-
-	//draw the axes
-	//they are tied to the local axis system
-	//and hence don't change
-	//we don't draw the root bones axes
-	//things happen in
-	if (strcmp(currentBone->name,root[0].name)) {
-		drawAxes(q, currentBone);
-	}
-
-
-
-	//if any animations are loaded we should apply the
 	//rotations and translations to each bone here
 	updateAnimation(currentBone);
 
 	//draw the joint
-	if (selectedBone==currentBone->id) {
+	if (currentBone->id == 1) {
 		//highlight
-		glColor3f(1, 0, 1);
+		glColor3f(1, 0, 0);
 	}
 	else {
 		glColor3f(0,1,1); // Joint
 	}
-	glutSolidSphere(0.4, 5, 5);
+	if (currentBone->id != 0) {
+		glutSolidSphere(0.4, 5, 5);
+	}
 
-	//undo axis transforms as they are not
-	//applied to bone drawing or translations
-	//root->rotation.multiplicativeInverse().toMatrix(f);
-	//glMultMatrixf(f);
 
 	glPushMatrix();//save before magical bone draw
 	//set color for bone, currently off grey
@@ -258,7 +248,9 @@ void Skeleton::displayNormal(bone* currentBone, GLUquadric* q) {
 	else{
 		glColor3f(0.6, 0.6, 0.6);
 	}
-	drawMagicalBone(currentBone, q);
+	if (currentBone->numChildren > 0) {
+		drawMagicalBone(currentBone, q);
+	}
 	glPopMatrix();//undo magical bone draw
 
 	//translate to new location from current
@@ -344,7 +336,18 @@ bone* Skeleton::findBone(char * name) {
 			return &root[i];
 		}
 	}
-	printf("Couldn't find a bone matching %s\n", name);
+	printf("Couldn't find a bone matching name %s\n", name);
+	exit(EXIT_FAILURE);
+}
+
+bone* Skeleton::findBone(int id) {
+	//search the bone list for the bone and return it
+	for(int i=0; i<numBones; i++) {
+		if(root[i].id == id ) {
+			return &root[i];
+		}
+	}
+	printf("Couldn't find a bone matching id %d\n", id);
 	exit(EXIT_FAILURE);
 }
 /*
@@ -374,27 +377,38 @@ void Skeleton::solveIK(G308_Point goal, bone* end_effector) {
 	quaternion angle;
 	bool complete = false;
 	int i = 0;
+	step++;
+	if (step < STEP_AMOUNT) {
+		return;
+	}
+	step = 0;
 	//we run over some set of max iterations
-	while( i<MAX_IK_RUNS && complete) {
-		//if our cur_rot_point has a parent
-		while(cur_rot_point->parent!=NULL && complete) {
+	while( i<MAX_IK_RUNS && !complete) {
+		//reset cur_rot_poitn for next iteration
+		cur_rot_point = bone_data;
+		float dist = vector_length(subtract(goal, bone_data->B_POS));
+		if(dist < DIST_DELTA) {
+			//if we are within distance we break the loop
+			complete = true;
+		}
+		//double check as we don't want to move root around
+		while(cur_rot_point->parent->parent!=NULL && !complete) {
 			//set the cur_rot_point to the parent
 			cur_rot_point = cur_rot_point->parent;
 			//find an angle of rotation around cur_rot_points position that brings
 			//end effector closest to our goal
 			angle = calculateRotation(goal, cur_rot_point->B_POS, bone_data->B_POS);
-			GLfloat m[16];
-			angle.toMatrix(m);
-			//apply this rotation around cur_rot_point to cur_rot_point and all of the
-			//children of cur_rot_point
-			applyRotation(m, cur_rot_point, cur_rot_point->B_POS);
-			//check how far end_effector is from our goal
-			float dist = vector_length(subtract(goal, bone_data->B_POS));
-			if(dist < DIST_DELTA) {
-				//if we are within distance we break the loop
-				complete = true;
+			cur_rot_point->B_ROT = cur_rot_point->B_ROT * angle;
+			//bone* currentbone = findBone(cur_rot_point->bone_id);
+			calculatePositions(root);
+			display();
+			for (int i = 0; i<NUM_BONES; i++) {
+				//zero Bone position for each Bone Data struct
+				B_DATA[i].B_POS = root[i].pos;
 			}
+
 		}
+		printf("run complete\n");
 		i++;
 	}
 	//iteration completed
@@ -438,10 +452,14 @@ void Skeleton::applyRotation(GLfloat* matrix, IK_Rotation* bone_data, G308_Point
 quaternion Skeleton::calculateRotation(G308_Point goal, G308_Point rot_point, G308_Point end) {
 	//we are currently doing this without thinking about DOF constraints
 	//vector from rotation point to goal point
+	printf("goal point!: %f, %f, %f\n", goal.x, goal.y, goal.z);
+	printf("rotation point: %f, %f, %f\n", rot_point.x, rot_point.y, rot_point.z);
+	printf("end effector: %f, %f, %f\n", end.x, end.y, end.z);
 	G308_Point goal_rot = subtract(goal, rot_point);
 	//vector from rotation point to end effector
 	G308_Point rot_end = subtract(end, rot_point);
-
+	printf("Vector goal rot(%f, %f, %f)\n", goal_rot.x, goal_rot.y, goal_rot.z);
+	printf("Vector end_rot(%f, %f, %f)\n", rot_end.x, rot_end.y, rot_end.z);
 	//angle and axis thats being rotated around
 	float angle;
 	G308_Point axis;
@@ -452,10 +470,27 @@ quaternion Skeleton::calculateRotation(G308_Point goal, G308_Point rot_point, G3
 	angle = dotProduct(goal_rot, rot_end);
 	//angle is the inverse cos
 	angle = acos(angle);
+	angle = angle*(180/M_PI);
+	//	if (angle > 10) {
+	//		angle = 10;
+	//	}
 	//axis is the vector at right angles to both other vectors
 	axis = crossProduct(goal_rot, rot_end);
 	axis = normalise(axis);
-
+	//	if (axis.x == 0 && axis.y == 0 and axis.z == 0) {
+	//		axis.x = 1;
+	//		axis.y = 0;
+	//		axis.z = 0;
+	//		angle = 0;
+	//	}
+	//axis = normalise(axis);
+	//	if ((stored_angle - angle) < 4 && vec_total((subtract(stored_axis, axis))) < 0.01 ) {
+	//		angle = 0;
+	//		printf("within deltas\n");
+	//	}
+	//	stored_angle = angle;
+	//	stored_axis = axis;
+	printf("Angle:%f, Axis(%f, %f, %f)\n", angle, axis.x, axis.y, axis.z);
 	//return the quaternion representing this rotation
 	return quaternion(angle, axis);
 
@@ -480,6 +515,11 @@ G308_Point Skeleton::normalise(G308_Point temp) {
 	float l = sqrt(temp.x * temp.x + temp.y * temp.y + temp.z * temp.z);
 	temp = {temp.x/l, temp.y/l, temp.z/l};
 	return temp;
+}
+
+float Skeleton::vec_total(G308_Point p) {
+	float a =p.x+p.y+p.z;
+	return a;
 }
 
 /**

@@ -56,7 +56,8 @@ bool displayFluid = true, waterFlowing = false;
 //Francis ~IK stuff
 bool displayRobot = true;//draw robot arms
 bool calculateIK = false;//calculate ik values
-Skeleton* robot;//pointer to our robot arm, will become a vector at some point
+Skeleton* robot;//pointer to our robot arm
+G308_Point goal {25, 0, -100};
 
 void G308_keyboardListener(unsigned char, int, int);
 void G308_mouseListener(int, int, int, int);
@@ -77,16 +78,16 @@ int main(int argc, char** argv)
 		exit(EXIT_FAILURE);
 	}
 	glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
-    glutInitWindowSize(g_nWinWidth, g_nWinHeight);
-    g_mainWnd = glutCreateWindow("COMP308 Assignment1");
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+	glutInitWindowSize(g_nWinWidth, g_nWinHeight);
+	g_mainWnd = glutCreateWindow("COMP308 Assignment1");
 
-    int error = glewInit();
-    if (GLEW_OK != error)
-    	printf("error is: %s\n", glewGetErrorString(error));
-    glutDisplayFunc(G308_Display);
-    glutReshapeFunc(G308_Reshape);
-    glutKeyboardFunc(G308_keyboardListener);
+	int error = glewInit();
+	if (GLEW_OK != error)
+		printf("error is: %s\n", glewGetErrorString(error));
+	glutDisplayFunc(G308_Display);
+	glutReshapeFunc(G308_Reshape);
+	glutKeyboardFunc(G308_keyboardListener);
 	glutMouseFunc(G308_mouseListener);
 	glutMotionFunc(G308_mouseMovement);
 
@@ -106,7 +107,7 @@ int main(int argc, char** argv)
 	glutIdleFunc(G308_Display);
 	glutMainLoop();
 
-    return 0;
+	return 0;
 }
 
 // Display function
@@ -135,11 +136,28 @@ void G308_Display()
 
 	if(displayRobot) {
 		robot->display();
+		/*
+		 * Okay so the problem I seem to be having is that
+		 * moving the camera changes the world and yet the goal
+		 * pos wasn't updated, so we do this hack which is crazy
+		 * don't even ask me man
+		 */
+		glPushMatrix();
+		glTranslatef(goal.x, goal.y, goal.z);
+		GLfloat f[16];
+		//save our position at this point
+		glGetFloatv(GL_MODELVIEW_MATRIX, f);
+		//f now has the state of the model view
+		G308_Point result = {f[12], f[13], f[14]};
+		glutSolidSphere(0.4, 5, 5);
+		glPopMatrix();
+		robot->setEndEffector(3, goal);
+
 	}
 
 
 
-//	SpotLight();
+	//	SpotLight();
 	resetCamera();
 
 	glDisable(GL_DEPTH_TEST);
@@ -163,10 +181,10 @@ G308_Point arcBallPoint(int x, int y) {
 	else
 		pt.z = sqrt(1.0 - r);
 
-//	float xValue = (x-center.x)/radius;
-//	float yValue = (y-center.y)/radius;
-//	float zValue = sqrt(1-(pow(xValue,2)+pow(yValue,2)));
-//	printf("point values are %f %f %f\n", pt.x, pt.y, pt.z);
+	//	float xValue = (x-center.x)/radius;
+	//	float yValue = (y-center.y)/radius;
+	//	float zValue = sqrt(1-(pow(xValue,2)+pow(yValue,2)));
+	//	printf("point values are %f %f %f\n", pt.x, pt.y, pt.z);
 	return pt;
 
 }
@@ -194,36 +212,36 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		fluidSim->calculateSurface();
 		glutPostRedisplay();
 		break;
-	// toggle water flowing naturally
+		// toggle water flowing naturally
 	case 'x':
 		waterFlowing = !waterFlowing;
 		break;
-	// flatten the terrain
+		// flatten the terrain
 	case 't':
 		fluidSim->flattenTerrain();
 		break;
-	// randomise the heights of the water
+		// randomise the heights of the water
 	case 'r':
 		fluidSim->randomiseHeights();
 		break;
-	// randomise terrain
+		// randomise terrain
 	case 'b':
 		fluidSim->randomiseTerrain();
 		break;
 	case 'f':
 		fluidSim->lowerWater();
 		break;
-	// add water to the centre of the pool
+		// add water to the centre of the pool
 	case 'p':
 		fluidSim->poorWater();
 		break;
-	// make a wave
+		// make a wave
 	case 'v':
 		fluidSim->wave();
 		break;
-	//
-	// wasd controls for camera movement
-	//
+		//
+		// wasd controls for camera movement
+		//
 	case 'w':
 		zooming(-0.2);
 		break;
@@ -237,15 +255,15 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		panning(-0.2, 0);
 		break;
 
-//	case 'f':
+		//	case 'f':
 
 		//Reserved, Fires balls
-	//	break;
-//	case 'b':
+		//	break;
+		//	case 'b':
 		//Reserved, spawns many balls, more than you have.
-	//	break;
+		//	break;
 
-	// Old lighting controls
+		// Old lighting controls
 	case 'e':
 		spotCutoff += 1.0;
 		if (spotCutoff > 90)
@@ -321,9 +339,9 @@ void G308_mouseListener(int button, int state, int x, int y) {
 }
 
 void G308_mouseMovement(int x, int y) {
-//	printf("center before %f %f %f\n", center.x, center.y, center.z);
-//	printf("eye before %f %f %f\n", eye.x, eye.y, eye.z);
-//	printf("top before %f %f %f\n", top.x, top.y, top.z);
+	//	printf("center before %f %f %f\n", center.x, center.y, center.z);
+	//	printf("eye before %f %f %f\n", eye.x, eye.y, eye.z);
+	//	printf("top before %f %f %f\n", top.x, top.y, top.z);
 	if(lookActive) {
 		float matrix[16];
 		G308_Point directionVector = {center.x-eye.x, center.y-eye.y, center.z-eye.z};
@@ -344,14 +362,14 @@ void G308_mouseMovement(int x, int y) {
 		top.x = newVector.x;
 		top.y = newVector.y;
 		top.z = newVector.z;
-//		printf("center after %f %f %f\n", center.x, center.y, center.z);
-//		printf("eye after %f %f %f\n", eye.x, eye.y, eye.z);
-//		printf("top after %f %f %f\n", top.x, top.y, top.z);
+		//		printf("center after %f %f %f\n", center.x, center.y, center.z);
+		//		printf("eye after %f %f %f\n", eye.x, eye.y, eye.z);
+		//		printf("top after %f %f %f\n", top.x, top.y, top.z);
 		mouseX = x;
 		mouseY = y;
 	}
 	else if (panningActive) {
-//		printf("in panning\n");temp
+		//		printf("in panning\n");temp
 		float xChange = (mouseX-x)/20.0;
 		float yChange = (mouseY-y)/20.0;
 		G308_Point temp = {center.x-eye.x, center.y-eye.y, center.z-eye.z};
@@ -366,8 +384,8 @@ void G308_mouseMovement(int x, int y) {
 
 		mouseX = x;
 		mouseY = y;
-//		printf("about to move camera\n");
-//		printf("camera moved\n");
+		//		printf("about to move camera\n");
+		//		printf("camera moved\n");
 	}
 	else if (zoomActive) {
 		float yChange = (y-mouseY)/10.0;
@@ -387,12 +405,12 @@ void G308_mouseMovement(int x, int y) {
 // Reshape function
 void G308_Reshape(int w, int h)
 {
-    if (h == 0) h = 1;
+	if (h == 0) h = 1;
 
 	g_nWinWidth = w;
 	g_nWinHeight = h;
-    
-    glViewport(0, 0, g_nWinWidth, g_nWinHeight);  
+
+	glViewport(0, 0, g_nWinWidth, g_nWinHeight);
 }
 
 // Set Light
@@ -432,26 +450,26 @@ void SpotLight() {
 	//printf("x angle is %f, y angle is %f\n", spotXAngle, spotYAngle);
 	float position[] = {spotPosition.x, spotPosition.y, spotPosition.z, 1.0};
 	float direction[]	  = {sin(spotXAngle/180*M_PI) * cos(spotYAngle/180*M_PI),
-							 sin(spotXAngle/180*M_PI) * sin(spotYAngle/180*M_PI),
-							 cos(spotXAngle/180*M_PI)};
+			sin(spotXAngle/180*M_PI) * sin(spotYAngle/180*M_PI),
+			cos(spotXAngle/180*M_PI)};
 	float diffintensity[] = {0.6f, 0.6f, 0.6f, 1.0f};
 	float ambient[]       = {0.0f, 0.0f, 0.0f, 1.0f};
 
 	glPushMatrix();
-		GLUquadric* quad = gluNewQuadric();
-		glColor3f(0.5, 0.5, 0.5);
-		glTranslatef(spotPosition.x, spotPosition.y, spotPosition.z);
-		glutSolidSphere(0.3, 10, 10);
-//		glPushMatrix();
-//			glRotatef(90, 1, 0, 0);
-//			glTranslatef(spotPosition.x, spotPosition.y, spotPosition.z);
-//			glTranslatef(0.0, 0.4, 0.0);
-//			gluCylinder(quad,0.05, 0.05 ,0.8, 10, 10);
-//		glPopMatrix();
-		glRotatef(-spotXAngle, 1, 0, 0);
-		glRotatef(spotYAngle - 90, 0, 1, 0);
-		gluCylinder(quad,0.0,spotCutoff/50,0.8,10,10);
-		gluDeleteQuadric(quad);
+	GLUquadric* quad = gluNewQuadric();
+	glColor3f(0.5, 0.5, 0.5);
+	glTranslatef(spotPosition.x, spotPosition.y, spotPosition.z);
+	glutSolidSphere(0.3, 10, 10);
+	//		glPushMatrix();
+	//			glRotatef(90, 1, 0, 0);
+	//			glTranslatef(spotPosition.x, spotPosition.y, spotPosition.z);
+	//			glTranslatef(0.0, 0.4, 0.0);
+	//			gluCylinder(quad,0.05, 0.05 ,0.8, 10, 10);
+	//		glPopMatrix();
+	glRotatef(-spotXAngle, 1, 0, 0);
+	glRotatef(spotYAngle - 90, 0, 1, 0);
+	gluCylinder(quad,0.0,spotCutoff/50,0.8,10,10);
+	gluDeleteQuadric(quad);
 	glPopMatrix();
 
 	glLightfv(GL_LIGHT3, GL_POSITION, position);
@@ -473,13 +491,13 @@ void G308_SetCamera()
 	glLoadIdentity();
 
 
-//-------------------------------------------------------------
-// [Assignment1]
-//
-// You may define new position to see the some of the obj files.
-// If so, you need to clearly comment it in your ReadMe file 
-// as well as the source code.
-//-------------------------------------------------------------
+	//-------------------------------------------------------------
+	// [Assignment1]
+	//
+	// You may define new position to see the some of the obj files.
+	// If so, you need to clearly comment it in your ReadMe file
+	// as well as the source code.
+	//-------------------------------------------------------------
 	gluLookAt(eye.x, eye.y, eye.z, center.x, center.y, center.z, top.x, top.y, top.z);
 	//gluLookAt(0.0, 2.5, 50.0, 0.0, 2.5, 0.0, 0.0, 1.0, 0.0); //bunny and teapot and sphere
 	//gluLookAt(0.0, 2.5, 50.0, 0.0, 2.5, 0.0, 0.0, 1.0, 0.0); //bunny and teapot and sphere

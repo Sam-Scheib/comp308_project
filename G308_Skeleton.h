@@ -35,6 +35,7 @@ typedef int DOF;
 #define DOF_ROOT 8 // Root has 6, 3 translation and 3 rotation
 #define BONE_SIZE 4
 #define MAX_IK_RUNS 5
+#define STEP_AMOUNT 200
 
 struct IK_Rotation {
 	quaternion B_ROT;
@@ -66,9 +67,14 @@ void trim(char**);
 
 class Skeleton {
 private:
+	G308_Point default_pos;
+	int step;
 	int maxBones, m_numFrames;
 	bone* root;
 	float camRotation;
+	float stored_angle;
+	G308_Point stored_axis;
+	bool animationExists;
 
 	//file reading methods for asf
 	bool readASF(char*);
@@ -81,6 +87,7 @@ private:
 
 	//misc methods
 	void calculatePositions(bone *);
+	void calculateInitialPositions(bone *);
 	void setDefaultPostures();
 
 	//display methods
@@ -118,6 +125,8 @@ private:
 
 	//normalise vector
 	G308_Point normalise(G308_Point);
+	//add vec parts
+	float vec_total(G308_Point);
 
 
 
@@ -127,6 +136,7 @@ public:
 	float angle;
 	//find a bone by name
 	bone* findBone(char*);
+	bone* findBone(int);
 	//constructor destructor
 	Skeleton(char*);
 	~Skeleton();

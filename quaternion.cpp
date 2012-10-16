@@ -173,7 +173,7 @@ quaternion quaternion::normalise() const {
 }
 
 void quaternion::print() const{
-	printf("(%.2f,%.2f.%.2f,%.2f)",a,b,c,d);
+	printf("(%.2f,%.2f.%.2f,%.2f)\n",a,b,c,d);
 }
 
 void quaternion::toMatrix(float* matrix) const {

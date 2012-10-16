@@ -17,46 +17,32 @@
 :bonedata
   begin
      id 1 
-     name arm_one
-     direction 1 0 0
-     length 2.68184 
+     name joint1
+     direction 0 1 0 
+     length 5
      axis 0 0 0  XYZ
   end
   begin
      id 2 
-     name arm_two
-     direction 1 0 0  
-     length 1 0 0
-     axis 0 0 20  XYZ
+     name joint2
+     direction 0 1 0  
+     length 5
+     axis 0 0 0  XYZ
     dof rx ry rz
     limits (-160.0 20.0)
            (-70.0 70.0)
            (-60.0 70.0)
   end
   begin
-     id 3 
-     name arm_three
-     direction 1 0 0
-     length 7.40507   
-     axis 0 0 20   XYZ
-    dof rx
-    limits (-10.0 170.0)
+  	id 3
+  	name joint3
+  	length 5
+  	axis 0 0 0 XYZ
+  	dof rx ry rz
   end
-  begin
-     id 4 
-     name arm_four
-     direction 1 0 0
-     length 2.00008   
-     axis -90 7.62852e-016 20   XYZ
-    dof rx rz
-    limits (-45.0 90.0)
-           (-70.0 20.0)
-  end
-  
 :hierarchy
   begin
-    root arm_one
-    arm_one arm_two
-    arm_two arm_three
-    arm_three arm_four
+    root joint1 
+    joint1 joint2
+    joint2 joint3
   end
