@@ -266,6 +266,7 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 	case 'p':
 		robot->step = 0;
 		break;
+		
 	case '6':
 		if(is_paused) {
 			is_paused = false;
@@ -274,19 +275,19 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		}
 		break;
 
-	case 'l':
+	case '7':
 		goal.z = goal.z-2;
 		break;
-	case 'n':
+	case '8':
 		goal.x = goal.x-2;
 		break;
-	case 'm':
+	case '9':
 		goal.x = goal.x+2;
 		break;
 
-	case '9':
+	case '0':
 		goal.z = goal.z+2;
-		break;
+		break;\
 		//	case 'f':
 
 		//Reserved, Fires balls

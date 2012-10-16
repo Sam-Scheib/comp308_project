@@ -48,6 +48,12 @@
   	axis 0 0 0 XYZ
   	dof rx ry rz
   end
+  begin
+  	id 4
+  	name joint4
+  	length 5
+  	axis 0 0 0 XYZ
+  end
 :hierarchy
   begin
     root joint1 
