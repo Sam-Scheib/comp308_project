@@ -40,6 +40,8 @@ public:
 	void poorWater();
 	void poorWater(int, int);
 	void wave();
+	float getTopWavePoint();
+	float getBottomWavePoint();
 	void displayFluid();
 };
 

@@ -204,6 +204,14 @@ void Fluid::wave() {
 	}
 }
 
+float Fluid::getTopWavePoint() {
+	return heights[rows/2][cols-1];
+}
+
+float Fluid::getBottomWavePoint() {
+	return heights[rows/2][1];
+}
+
 void Fluid::checkGroundHit(int x, int y) {
 	if (heights[x][y] < ground[x][y]) {
 		float heightDiff =  ground[x][y] - heights[x][y];
@@ -300,7 +308,7 @@ void Fluid::displayFluid() {
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	glTranslatef(-rows/2.0, -wallheight/0.2, -cols/2.0);
+	//glTranslatef(-rows/2.0, -wallheight/0.2, -cols/2.0);
 
 	glCallList(terrainList);
 
