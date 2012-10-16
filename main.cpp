@@ -104,10 +104,11 @@ int main(int argc, char** argv)
 		fluidSim = new Fluid(rows, cols);
 	}
 	if (displayRobot) {
-		robot = new Skeleton("robot.asf", {-50, 10, -50});
+		robot = new Skeleton("robot.asf", {1, 10, cols+4});
 		robot1 = new Skeleton("robot.asf", {(rows/2), 1, cols+4});
-		robot2 = new Skeleton("robot.asf", {(rows/2) 1, -4});
+		robot2 = new Skeleton("robot.asf", {(rows/2), 1, -4});
 		robot1->setIterations(40);
+		robot2->setIterations(40);
 		robot->setIterations(40);
 	}
 
@@ -161,8 +162,11 @@ void G308_Display()
 		glPopMatrix();
 		glPushMatrix();
 		robot1->step = 0;
-		robot1->setEndEffector(4, {rows/2, 0,cols}); //call this method
+		robot1->setEndEffector(4, {rows/2, fluidSim->getTopWavePoint(),cols-1}); //call this method
 		robot1->display();
+		robot2->step = 0;
+		robot2->setEndEffector(4, {rows/2, fluidSim->getBottomWavePoint(),1});
+		robot2->display();
 		glPopMatrix();
 
 	}
