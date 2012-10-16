@@ -133,7 +133,7 @@ public:
 	//draw the skeleton
 	void display();
 	//IK methods
-
+	void setEndEffector(int, G308_Point);
 	//return a quaternion that is the current angle of the bone given
 	//by bone_id, this will also increase the rotation of that angle
 	//for the next call

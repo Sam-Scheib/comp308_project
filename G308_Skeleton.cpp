@@ -26,6 +26,7 @@
 //#define M_PI 3.14
 //takes a filename for an asf file
 Skeleton::Skeleton(char* filename) {
+	G308_Point x_axis = {1, 0, 0};
 	//set up defaults
 	numBones = 1;
 	maxBones = 60;
@@ -74,7 +75,7 @@ Skeleton::Skeleton(char* filename) {
 		//null parent link
 		B_DATA[i].parent = NULL;
 		//empty quats in
-		B_DATA[i].B_ROT = quaternion(0, 0, 0, 0);
+		B_DATA[i].B_ROT = quaternion(0, x_axis);
 	}
 	//generate child structure by going through bones again
 	//and adding all as per the bone array, as well as that
@@ -96,6 +97,16 @@ Skeleton::Skeleton(char* filename) {
 
 Skeleton::~Skeleton() {
 	deleteBones(root);
+}
+
+void Skeleton::setEndEffector(int bone_id, G308_Point goal) {
+	bone* end_effector;
+	for (int i =0; i<NUM_BONES; i++) {
+		if(root[i].id == bone_id) {
+			end_effector = &(root[i]);
+		}
+	}
+	solveIK(goal, end_effector);
 }
 
 void Skeleton::deleteBones(bone* root) {
@@ -204,8 +215,8 @@ void Skeleton::displayNormal(bone* currentBone, GLUquadric* q) {
 
 	//apply result
 	GLfloat f[16];
-	root->rotation.toMatrix(f);
-	glMultMatrixf(f);
+//	root->rotation.toMatrix(f);
+//	glMultMatrixf(f);
 
 
 	//draw the axes
@@ -235,8 +246,8 @@ void Skeleton::displayNormal(bone* currentBone, GLUquadric* q) {
 
 	//undo axis transforms as they are not
 	//applied to bone drawing or translations
-	root->rotation.multiplicativeInverse().toMatrix(f);
-	glMultMatrixf(f);
+	//root->rotation.multiplicativeInverse().toMatrix(f);
+	//glMultMatrixf(f);
 
 	glPushMatrix();//save before magical bone draw
 	//set color for bone, currently off grey
