@@ -9,7 +9,7 @@
 #include <GL/glut.h>
 #include "math.h"
 
-float GRAVITY = 1;
+float GRAVITY = 0.01;
 
 ball::ball(float rad, G308_Point position_in, G308_Point velocity_in) {
 	// TODO Auto-generated constructor stub
@@ -21,7 +21,7 @@ ball::ball(float rad, G308_Point position_in, G308_Point velocity_in) {
 
 void ball::applyTickMovement() {
 	//Gravity
-	//velocity.y = velocity.y - GRAVITY;
+	//velocity.y = velocity.y + GRAVITY;
 
 	position = subtract(position, velocity);
 
@@ -63,7 +63,7 @@ void ball::applyForce(G308_Point* inputForce) {
 
 bool ball::willcollidenormal(G308_Point* normal) {
 
-	return (dotProduct(velocity, *normal) > 0);
+	return (dotProduct(velocity, *normal) < 0);
 }
 
 bool ball::ballwillcollide(ball* otherball) {
@@ -82,12 +82,12 @@ bool ball::ballwillcollide(ball* otherball) {
 bool ball::collideNormal(G308_Point* normal) {
 
 	float length = sqrt(
-			(normal->x * normal->x) + (normal->x * normal->x)
-					+ (normal->x * normal->x));
+			(normal->x * normal->x) + (normal->y * normal->y)
+					+ (normal->z * normal->z));
 	G308_Point normaldist = scalarMultiply(*normal, (1 / length));
 	float dotprod = dotProduct(velocity, normaldist);
-	G308_Point normVelocity = scalarMultiply(normaldist, 2);
-	normVelocity = scalarMultiply(normVelocity, dotprod);
+	G308_Point normVelocity = scalarMultiply(normaldist, 2*.8);
+	normVelocity = scalarMultiply(normVelocity, 0.8*dotprod);//hack
 
 	velocity = subtract(velocity, normVelocity);
 
@@ -105,11 +105,11 @@ bool ball::collision(ball* object) {
 	G308_Point area;
 	temp = scalarMultiply(normaldist, 2);
 	temp2 = dotProduct(temp, velocity);
-	area = scalarMultiply(temp, temp2);
+	area = scalarMultiply(temp, temp2*.8);
 	velocity = subtract(velocity, area);
 	temp2 = dotProduct(temp, *object->getVector());
 	area = scalarMultiply(temp, temp2);
-	object->applyForce(&area);
+	//object->applyForce(&area);
 //	velocity.x = -velocity.x;
 //	velocity.y = -velocity.y;
 //	velocity.z = -velocity.z;

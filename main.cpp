@@ -21,7 +21,7 @@
 #include <math.h>
 
 
-// My definition 
+// My definition b
 #include "define.h"
 #include "quaternion.h"
 #include "imageLoader.h"
@@ -59,6 +59,8 @@ OctTree* ballSim;
 bool displayBalls=true;
 ball* b1 ;
 ball* b2;
+ball* b3;
+ball* b4;
 
 
 Fluid* fluidSim;
@@ -134,11 +136,8 @@ int main(int argc, char** argv)
 		bottomleft->z=-5.0f;
 		float size = 10;
 
-	 b1 = new ball(1, testpoint, *zerovelocity);
-	b2 = new ball(1, testpoint2, *unitvelocity);
 	ballSim = new OctTree(0,bottomleft,size);
-	ballSim->add(b1);
-	ballSim->add(b2);
+
 	if(b1==b2)
 			printf("fuck\n");
 
@@ -182,7 +181,7 @@ void G308_Display()
 
 		ballSim->moveBalls();
 		ballSim->performCollisions();
-
+		ballSim->renderTree();
 
 
 
@@ -239,6 +238,8 @@ G308_Point getNewPoint(G308_Point p, float* matrix) {
 }
 
 void G308_keyboardListener(unsigned char key, int x, int y) {
+	G308_Point DV = {-(center.x-eye.x), -(center.y-eye.y), -(center.z-eye.z)};
+	int i = 0;
 	switch(key){
 	// step through a display frame
 	case 'c':
@@ -258,7 +259,7 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		fluidSim->randomiseHeights();
 		break;
 	// randomise terrain
-	case 'b':
+	case 'g':
 		fluidSim->randomiseTerrain();
 		break;
 	case 'f':
@@ -292,9 +293,13 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 
 		//Reserved, Fires balls
 	//	break;
-//	case 'b':
-		//Reserved, spawns many balls, more than you have.
-	//	break;
+	case 'b':
+		ballSim->add();
+
+
+
+
+		break;
 
 	// Old lighting controls
 	case 'e':

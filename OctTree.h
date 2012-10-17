@@ -25,6 +25,12 @@ public:
 	std::set<ball*> *balls;
 	OctTree *children[2][2][2];
 	OctTree *rootnode;
+	G308_Point* top ;
+	G308_Point* bot ;
+	G308_Point* left ;
+	G308_Point* right ;
+	G308_Point* front ;
+	G308_Point* back ;
 
 	int MAX_TREE_DEPTH ;
 	int MIN_OBJ_PERTREE ;
@@ -32,6 +38,9 @@ public:
 	int depth;
 	int level;
 	int ballNumber;
+	float xplane;
+	float yplane;
+	float zplane;
 	G308_Point* botleft;
 	float size;
 	#define X_TOP 1
@@ -45,12 +54,14 @@ public:
 	void remove(ball*);
 	void splitSelf();
 	void add(ball* ball);
+	void add();
 	void renderTree();
 	void removeChildren();
 	void pullballsfromChildren();
 	void moveBalls();
 	void performCollisions();
 	virtual ~OctTree();
+
 
 
 
