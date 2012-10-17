@@ -20,7 +20,8 @@
 #include <GL/glut.h>
 #include <math.h>
 
-// My definition 
+
+// My definition b
 #include "define.h"
 #include "quaternion.h"
 #include "imageLoader.h"
@@ -28,6 +29,10 @@
 
 //defines for ik
 #include "G308_Skeleton.h"
+
+//Defines for balls
+#include "OctTree.h"
+#include "ball.h"
 
 // Global variables
 GLuint g_mainWnd;
@@ -42,17 +47,30 @@ float spotXAngle = 266.0, spotYAngle = 59.0;
 
 // Camera variables
 float radius = 300.0;
+
 G308_Point eye = {0.0, 20.0, -80.0};
 G308_Point center = {0.0, 20.0, -79.0};
+
 G308_Point top = {0.0, 1.0, 0.0};
 
 bool lookActive = false, panningActive = false,zoomActive = false;
 int mouseX, mouseY;
 
 // Variables for our individual modules
+OctTree* ballSim;
+bool displayBalls=true;
+ball* b1 ;
+ball* b2;
+ball* b3;
+ball* b4;
+
+
 Fluid* fluidSim;
+
+
 bool displayFluid = true, waterFlowing = true;
 int rows = 100, cols = 100;
+
 
 //Francis ~IK stuff
 bool displayRobot = true;//draw robot arms
@@ -115,7 +133,37 @@ int main(int argc, char** argv)
 		robot3->setIterations(1);
 		robot->setIterations(40);
 	}
+	if(displayBalls){
+		/*G308_Point* testpoint = new G308_Point;
+		testpoint->x=1.0f;
+		testpoint->y=1.0f;
+		testpoint->z=0.0f;*/
+		G308_Point testpoint = {0.0f, 0.0f, 0.0f };
+		G308_Point testpoint2 = {0.0f, 5.0f, 0.0f };
+		/*G308_Point* testpoint2 = new G308_Point;
+		testpoint2->x=2.0f;
+		testpoint2->y=2.0f;
+		testpoint2->z=0.0f;*/
+		G308_Point* zerovelocity = new G308_Point;
+		zerovelocity->x=0.0f;
+		zerovelocity->y=0.0f;
+		zerovelocity->z=0.0f;
+		G308_Point* unitvelocity = new G308_Point;
+		unitvelocity->x=0.0f;
+		unitvelocity->y=0.01f;
+		unitvelocity->z=0.0f;
+		G308_Point* bottomleft = new G308_Point;
+		bottomleft->x=-5.0f;
+		bottomleft->y=-5.0f;
+		bottomleft->z=-5.0f;
+		float size = 10;
 
+	ballSim = new OctTree(0,bottomleft,size);
+
+	if(b1==b2)
+			printf("fuck\n");
+
+	}
 
 	G308_SetLight();
 	G308_SetCamera();
@@ -150,6 +198,20 @@ void G308_Display()
 		fluidSim->displayFluid();
 	}
 
+
+	if(displayBalls){
+		//ballSim = new OctTree();
+		glPushMatrix();
+		glTranslatef(-10,0,0);
+		ballSim->moveBalls();
+		ballSim->performCollisions();
+		ballSim->renderTree();
+		glPopMatrix();
+
+
+	}
+
+
 	if(displayRobot) {
 		glPushMatrix();
 		if(!is_paused ) {
@@ -178,6 +240,7 @@ void G308_Display()
 		glPopMatrix();
 
 	}
+
 
 
 
@@ -230,6 +293,8 @@ G308_Point getNewPoint(G308_Point p, float* matrix) {
 }
 
 void G308_keyboardListener(unsigned char key, int x, int y) {
+	G308_Point DV = {-(center.x-eye.x), -(center.y-eye.y), -(center.z-eye.z)};
+	int i = 0;
 	switch(key){
 	// step through a display frame
 	case 'c':
@@ -250,6 +315,7 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		robot1->reset_angles();
 		robot2->reset_angles();
 		break;
+
 		// randomise the heights of the water
 	case 'b':
 		fluidSim->randomiseHeights();
@@ -307,8 +373,23 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		panning(-1.0, 0.0);
 		break;
 
+
+//	case 'f':
+
+		//Reserved, Fires balls
+	//	break;
+	case 'n':
+		ballSim->add();
+
+
+
+
+		break;
+
+
 	case '1':
 		robot3->step = 0;
+
 		break;
 
 	case '6':

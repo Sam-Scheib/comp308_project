@@ -6,10 +6,10 @@ LIBS=-lGL -lglut -lGLU -ljpeg -lm -lGLEW -lpng
 IPATH= -I/usr/pkg/include
 
 all: Project
-Project : main.o quaternion.o fluid.o shader.o FBO.o imageLoader.o ball.o G308_Skeleton.o
+Project : main.o quaternion.o fluid.o shader.o FBO.o imageLoader.o ball.o G308_Skeleton.o OctTree.o
 	$(CC) -o $@ $^ $(LIBS) $(LPATH) $(LDPATH)
 .cpp.o: 
 	$(CC) $(CFLAGS) -c -o $@ $^ $(IPATH)
 clean :
 	rm -rf *.o
-	rm Project
+	rm -f Project
