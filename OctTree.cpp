@@ -144,8 +144,8 @@ void OctTree::renderTree() {
 	}else{
 	glPushMatrix();
 	glTranslatef(LowerLeftCorner.x+((1.0/2.0)*size),LowerLeftCorner.y+((1.0/2.0)*size),LowerLeftCorner.z+((1.0/2.0)*size));
-	printf("%f %f %f: lowerleftx y z\n",LowerLeftCorner.x,LowerLeftCorner.y,LowerLeftCorner.z);
-	printf("size %f \n", size);
+	//printf("%f %f %f: lowerleftx y z\n",LowerLeftCorner.x,LowerLeftCorner.y,LowerLeftCorner.z);
+	//printf("size %f \n", size);
 	glutWireCube(size);
 	glPopMatrix();
 	}
@@ -178,7 +178,7 @@ void OctTree::whichchildren(ball* ball, bool addflag) {
 		}
 
 	} else {
-		printf("X size %f, llc %f, child %f\n", xmax, LowerLeftCorner.x, childsize);
+		//printf("X size %f, llc %f, child %f\n", xmax, LowerLeftCorner.x, childsize);
 		puts("x3");
 		possiblechildren = possiblechildren | X_BOT;
 	}
@@ -192,7 +192,7 @@ void OctTree::whichchildren(ball* ball, bool addflag) {
 		}
 
 	} else {
-		printf("Y size %f, llc %f, child %f\n", ymax, LowerLeftCorner.y, childsize);
+		//printf("Y size %f, llc %f, child %f\n", ymax, LowerLeftCorner.y, childsize);
 		puts("y3");
 		possiblechildren = possiblechildren | Y_BOT;
 	}
@@ -206,7 +206,7 @@ void OctTree::whichchildren(ball* ball, bool addflag) {
 		}
 
 	} else {
-		printf("Z size %f, llc %f, child %f\n", zmax, LowerLeftCorner.z, childsize);
+		//printf("Z size %f, llc %f, child %f\n", zmax, LowerLeftCorner.z, childsize);
 		puts("z3");
 		possiblechildren = possiblechildren | Z_BOT;
 	}
@@ -223,7 +223,7 @@ void OctTree::whichchildren(ball* ball, bool addflag) {
 				y = 1;
 
 			if (addflag) {
-				printf("inserting %d %d %d\n",x,y,z);
+				//printf("inserting %d %d %d\n",x,y,z);
 				children[x][y][z]->add(ball);
 			} else {
 				children[x][y][z]->remove(ball);
@@ -312,7 +312,7 @@ void OctTree::performCollisions() {
 					ball* b1 = *iter;
 					ball* b2 = *rator;
 					if (b1->ballwillcollide(b2)) {
-						printf("collisen tered~~~~~~~~~~~~~~~\n");
+						//printf("collisen tered~~~~~~~~~~~~~~~\n");
 						b1->collision(b2);
 					}
 
@@ -324,7 +324,7 @@ void OctTree::performCollisions() {
 
 			if ((*iter)->position.x <  (rootnode->LowerLeftCorner.x)) {
 												//if((*iter)->willcollidenormal(right)){
-												printf("xcollide bot\n");
+												//printf("xcollide bot\n");
 												((*iter)->collideNormal(left));
 
 												//}
@@ -335,7 +335,7 @@ void OctTree::performCollisions() {
 										//if((*iter)->willcollidenormal(right)){
 
 										((*iter)->collideNormal(left));
-										printf("xcollide top\n");
+										//printf("xcollide top\n");
 										//}
 									}
 
@@ -343,12 +343,12 @@ void OctTree::performCollisions() {
 			 if ((*iter)->position.y >  (rootnode->LowerLeftCorner.y+size)) {
 							//if((*iter)->willcollidenormal(right)){
 							((*iter)->collideNormal(top));
-							printf("ycollide top\n");
+						//	printf("ycollide top\n");
 							//}
 						}
 			 if ((*iter)->position.y <  rootnode->LowerLeftCorner.y) {
 									//if((*iter)->willcollidenormal(right)){
-									printf("something\n");
+									//printf("something\n");
 									((*iter)->collideNormal(bot));
 
 									//}
@@ -356,12 +356,12 @@ void OctTree::performCollisions() {
 
 			 if((*iter)->position.z<(rootnode->LowerLeftCorner.z)){
 				 ((*iter)->collideNormal(front));
-					printf("important\n");
+					//printf("important\n");
 
 			 }
 			 if((*iter)->position.z>(rootnode->LowerLeftCorner.z+size)){
 				 ((*iter)->collideNormal(front));
-					printf("collide front\n");
+					//printf("collide front\n");
 					//Works
 
 			 }
@@ -391,7 +391,7 @@ void OctTree::performCollisions() {
 
 			}else if ((*iter)->position.y >  10) {
 				//if((*iter)->willcollidenormal(right)){
-				printf("something\n");
+				//printf("something\n");
 				((*iter)->collideNormal(top));
 
 				//}
