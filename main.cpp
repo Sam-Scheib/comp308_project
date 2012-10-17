@@ -51,7 +51,7 @@ int mouseX, mouseY;
 
 // Variables for our individual modules
 Fluid* fluidSim;
-bool displayFluid = true, waterFlowing = false;
+bool displayFluid = true, waterFlowing = true;
 int rows = 100, cols = 100;
 
 //Francis ~IK stuff
@@ -61,8 +61,10 @@ bool is_paused = false;
 Skeleton* robot;//pointer to our robot arm
 Skeleton* robot1;//wave gen!
 Skeleton* robot2; //wave gen!
+Skeleton* robot3;//slow motion robot!
 //goal for moveable guy!
-G308_Point goal {-30, 20, -30};
+G308_Point goal {10, 20, cols+14};
+G308_Point goal_two {10, 20, -5};
 
 void G308_keyboardListener(unsigned char, int, int);
 void G308_mouseListener(int, int, int, int);
@@ -107,8 +109,10 @@ int main(int argc, char** argv)
 		robot = new Skeleton("robot.asf", {1, 10, cols+4});
 		robot1 = new Skeleton("robot.asf", {(rows/2), 1, cols+4});
 		robot2 = new Skeleton("robot.asf", {(rows/2), 1, -4});
+		robot3 = new Skeleton("robot.asf", {rows, 10, cols+4});
 		robot1->setIterations(40);
 		robot2->setIterations(40);
+		robot3->setIterations(1);
 		robot->setIterations(40);
 	}
 
@@ -169,6 +173,8 @@ void G308_Display()
 		robot2->setEndEffector(4, {rows/2, fluidSim->getBottomWavePoint(),3});
 		//printf("bottom")
 		robot2->display();
+		robot3->setEndEffector(4, goal_two);
+		robot3->display();
 		glPopMatrix();
 
 	}
@@ -238,24 +244,30 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 	case 't':
 		fluidSim->flattenTerrain();
 		break;
-		// randomise the heights of the water
+		// reset the heights of the water
 	case 'r':
+		fluidSim->reset();
+		robot1->reset_angles();
+		robot2->reset_angles();
+		break;
+		// randomise the heights of the water
+	case 'b':
 		fluidSim->randomiseHeights();
 		robot1->reset_angles();
 		robot2->reset_angles();
 		break;
 		// randomise terrain
-	case 'b':
+	case 'g':
 		fluidSim->randomiseTerrain();
 		break;
 	case 'f':
 		fluidSim->lowerWater();
 		break;
-	// add water to random points
+		// add water to random points
 	case 'o':
 		fluidSim->poorWater();
 		break;
-	// add water to center
+		// add water to center
 	case 'p':
 		fluidSim->poorWater(rows/2, cols/2);
 		break;
@@ -263,35 +275,42 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 	case 'v':
 		fluidSim->wave();
 		break;
+		// toggle alpha blend
+	case 'z':
+		fluidSim->alpha = !fluidSim->alpha;
+		break;
 
+		// camera movement controls
+
+		// zoom in
 	case 'w':
 		zooming(-1.0);
 		break;
-	// zoom out
+		// zoom out
 	case 's':
 		zooming(1.0);
 		break;
-	// pan up
+		// pan up
 	case 'e':
 		panning(0.0, 1.0);
 		break;
-	// pan down
+		// pan down
 	case 'q':
 		panning(0.0, -1.0);
 		break;
-	// pan left
+		// pan left
 	case 'a':
 		panning(1.0, 0.0);
 		break;
-	// pan right
+		// pan right
 	case 'd':
 		panning(-1.0, 0.0);
 		break;
 
 	case '1':
-		robot->step = 0;
+		robot3->step = 0;
 		break;
-		
+
 	case '6':
 		if(is_paused) {
 			is_paused = false;
@@ -300,17 +319,17 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		}
 		break;
 
-	case '7':
+	case '9':
 		goal.z = goal.z-2;
 		break;
-	case '8':
+	case '0':
 		goal.x = goal.x-2;
 		break;
-	case '9':
+	case '7':
 		goal.x = goal.x+2;
 		break;
 
-	case '0':
+	case '8':
 		goal.z = goal.z+2;
 		break;\
 		//	case 'f':
@@ -322,29 +341,29 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		//	break;
 
 
-	// Old lighting controls
-//	case 'e':
-//		spotCutoff += 1.0;
-//		if (spotCutoff > 90)
-//			spotCutoff = 90;
-//		break;
-//	case 'q':
-//		spotCutoff -= 1.0;
-//		if (spotCutoff < 1)
-//			spotCutoff = 1;
-//		break;
-//	case 'i':
-//		spotXAngle -= 1.0;
-//		break;
-//	case 'k':
-//		spotXAngle += 1.0;
-//		break;
-//	case 'j':
-//		spotYAngle -= 1.0;
-//		break;
-//	case 'l':
-//		spotYAngle += 1.0;
-//		break;
+		// Old lighting controls
+		//	case 'e':
+		//		spotCutoff += 1.0;
+		//		if (spotCutoff > 90)
+		//			spotCutoff = 90;
+		//		break;
+		//	case 'q':
+		//		spotCutoff -= 1.0;
+		//		if (spotCutoff < 1)
+		//			spotCutoff = 1;
+		//		break;
+		//	case 'i':
+		//		spotXAngle -= 1.0;
+		//		break;
+		//	case 'k':
+		//		spotXAngle += 1.0;
+		//		break;
+		//	case 'j':
+		//		spotYAngle -= 1.0;
+		//		break;
+		//	case 'l':
+		//		spotYAngle += 1.0;
+		//		break;
 	}
 
 	glutPostRedisplay();

@@ -29,6 +29,7 @@
 Skeleton::Skeleton(char* filename, G308_Point pos) {
 	G308_Point x_axis = {1, 0, 0};
 	//set up defaults
+	reset = false;
 	default_pos = pos;
 	stored_axis = {0, 0, 0};
 	stored_angle = 0;
@@ -376,13 +377,14 @@ quaternion* Skeleton::getRotation(int bone_id) {
 void Skeleton::reset_angles() {
 	G308_Point x_axis= {1, 0, 0};
 	for(int i = 0; i<NUM_BONES; i++) {
-		B_DATA[i].B_ROT = quaternion(0, x_axis);
+		B_DATA[i].B_ROT = quaternion(1, x_axis);
 	}
-	calculatePositions(root);
+	calculateInitialPositions(root);
 	for (int i = 0; i<NUM_BONES; i++) {
 		//zero Bone position for each Bone Data struct
 		B_DATA[i].B_POS = root[i].pos;
 	}
+	reset = true;
 }
 void Skeleton::setIterations(int i) {
 	iterations = i;
@@ -400,6 +402,10 @@ void Skeleton::solveIK(G308_Point goal, bone* end_effector) {
 	int i = 0;
 	if (step == 1) {
 		return;
+	}
+	if(reset) {
+		printf("reset");
+		reset = false;
 	}
 	//we run over some set of max iterations
 	//while( i<MAX_IK_RUNS && !complete) {
@@ -426,6 +432,7 @@ void Skeleton::solveIK(G308_Point goal, bone* end_effector) {
 		//find an angle of rotation around cur_rot_points position that brings
 		//end effector closest to our goal
 		angle = calculateRotation(goal, curr_rot_point->B_POS, bone_data->B_POS);
+		//angle.print();
 		curr_rot_point->B_ROT = curr_rot_point->B_ROT * angle;
 		//bone* currentbone = findBone(cur_rot_point->bone_id);
 		calculatePositions(root);
@@ -434,7 +441,6 @@ void Skeleton::solveIK(G308_Point goal, bone* end_effector) {
 			B_DATA[i].B_POS = root[i].pos;
 		}
 
-		//printf("run complete\n");
 		//i++;
 		//}
 		//iteration completed
@@ -576,9 +582,9 @@ quaternion Skeleton::calculateRotation(G308_Point goal, G308_Point rot_point, G3
 		//		angle = 0;
 		//	}
 		//axis = normalise(axis);
-		if ((stored_angle - angle) < 0.01 && vec_total((subtract(stored_axis, axis))) == 0) {
-			angle = 0;
-		}
+//		if ((stored_angle - angle) < 0.01 && vec_total((subtract(stored_axis, axis))) == 0) {
+//			angle = 0;
+//		}
 		stored_angle = angle;
 		stored_axis = axis;
 	}

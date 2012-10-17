@@ -32,6 +32,7 @@ public:
 	void glInit();
 	Fluid(int, int);
 	~Fluid();
+	void reset();
 	void randomiseHeights();
 	void randomiseTerrain();
 	void flattenTerrain();

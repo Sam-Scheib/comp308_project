@@ -39,7 +39,6 @@ typedef int DOF;
 
 struct IK_Rotation {
 	quaternion B_ROT;
-	quaternion B_ROT_END;
 	G308_Point B_POS;
 	int bone_id;
 	int num_children;
@@ -75,6 +74,7 @@ private:
 	float stored_angle;
 	G308_Point stored_axis;
 	bool animationExists;
+	bool reset;
 
 	//file reading methods for asf
 	bool readASF(char*);
