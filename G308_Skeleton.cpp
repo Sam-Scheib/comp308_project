@@ -403,10 +403,6 @@ void Skeleton::solveIK(G308_Point goal, bone* end_effector) {
 	if (step == 1) {
 		return;
 	}
-	if(reset) {
-		printf("reset");
-		reset = false;
-	}
 	//we run over some set of max iterations
 	//while( i<MAX_IK_RUNS && !complete) {
 	//reset cur_rot_poitn for next iteration
