@@ -9,7 +9,7 @@
 #include <GL/glut.h>
 #include "math.h"
 
-float GRAVITY = 0.01;
+float GRAVITY = 0.001;
 
 ball::ball(float rad, G308_Point position_in, G308_Point velocity_in) {
 	// TODO Auto-generated constructor stub
@@ -21,8 +21,11 @@ ball::ball(float rad, G308_Point position_in, G308_Point velocity_in) {
 
 void ball::applyTickMovement() {
 	//Gravity
-
-
+	float length = sqrt(
+				(velocity.x * velocity.x) + (velocity.y * velocity.y)
+						+ (velocity.z * velocity.z));
+		velocity = scalarMultiply(velocity, (1 / (length)));
+		velocity = scalarMultiply(velocity, 0.04);
 	position = subtract(position, velocity);
 	velocity.y = velocity.y + GRAVITY;
 }

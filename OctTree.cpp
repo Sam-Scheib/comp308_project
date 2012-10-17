@@ -9,6 +9,10 @@
 #include <stdio.h>
 #include <GL/glew.h>
 #include <GL/glut.h>
+#include <stdlib.h>
+#include "quaternion.h"
+#include "math.h"
+
 //change these
 
 OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize) {
@@ -107,16 +111,23 @@ OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize,
 
 void OctTree::add(){
 	G308_Point* pi = new G308_Point;
-	pi->x = LowerLeftCorner.x+2;
+	pi->x = LowerLeftCorner.x+rand()%10;
 
-	pi->y = LowerLeftCorner.y+1;
+	pi->y = LowerLeftCorner.y+rand()%10;
 
-	pi->z = LowerLeftCorner.z+3;
+	pi->z = LowerLeftCorner.z+rand()%10;
 
 	G308_Point* vec = new G308_Point;
-	vec->x= -0.00;
-	vec->y = -0.00;
-	vec->z = -0.05;
+
+	vec->x= rand()%100;
+	vec->y =rand()%100;
+	vec->z = rand()%100;
+
+
+	float length = sqrt(
+					(vec->x * vec->x) + (vec->y * vec->y)+ (vec->z *vec->z));
+			*vec = scalarMultiply(*vec, (1 / (length)));
+			*vec = scalarMultiply(*vec, 0.04);
 
 	ball* b = new ball(0.2,*pi,*vec);
 	add(b);
