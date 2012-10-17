@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "frame_controller.h"
 #include "define.h"
 #include "quaternion.h"
 
@@ -35,30 +34,23 @@ typedef int DOF;
 #define DOF_RZ 4
 #define DOF_ROOT 8 // Root has 6, 3 translation and 3 rotation
 #define BONE_SIZE 4
+#define MAX_IK_RUNS 5
+#define STEP_AMOUNT 200
 
-
-//struct G308_Point {
-//	float x;
-//	float y;
-//	float z;
-//};
-
-//Posture struct
-//contains lots of data about animations
-struct Posture
-{
-	//Root position (x, y, z)
-	G308_Point root_pos;
-	//Bone rotations (x, y z)
-	G308_Point bone_rotation[MAX_BONES_IN_ASF_FILE];
-	//Bone rotations in quaternion form
-	quaternion bone_rot_q[MAX_BONES_IN_ASF_FILE];
+struct IK_Rotation {
+	quaternion B_ROT;
+	G308_Point B_POS;
+	int bone_id;
+	int num_children;
+	IK_Rotation** children;
+	IK_Rotation* parent;
 };
 
 //Type to represent a bone
 typedef struct bone {
 	char* name;
 	G308_Point dir;
+	G308_Point pos;
 	quaternion rotation;
 	//bone id is this items index to the bone array
 	int id;
@@ -74,10 +66,16 @@ void trim(char**);
 
 class Skeleton {
 private:
+	G308_Point default_pos;
+	IK_Rotation* curr_rot_point;
 	int maxBones, m_numFrames;
 	bone* root;
 	float camRotation;
-	Posture* m_Postures;
+	float stored_angle;
+	G308_Point stored_axis;
+	bool animationExists;
+	bool reset;
+
 	//file reading methods for asf
 	bool readASF(char*);
 	void readHeading(char*, FILE*);
@@ -88,6 +86,8 @@ private:
 	DOF dofFromString(char*);
 
 	//misc methods
+	void calculatePositions(bone *);
+	void calculateInitialPositions(bone *);
 	void setDefaultPostures();
 
 	//display methods
@@ -95,6 +95,38 @@ private:
 	void drawMagicalBone(bone*, GLUquadric*);
 	void drawAxes(GLUquadric*, bone*);
 	void updateAnimation(bone*);
+	//IK METHODS AND VARIABLES
+	//Variables:
+	//distance delta
+	float DIST_DELTA;
+	//Pointer to robot skeleton
+	Skeleton* ROBOT;
+
+	IK_Rotation* B_DATA;
+
+	//number of bones in our robot
+	int NUM_BONES;
+
+	//Methods:
+
+	//take a rotation matrix and the current bone id and update
+	//it and all it's children's positions by rotating them around the rot point
+	//by the rotation matrix, stopping if it reaches the goal point
+	void applyRotation(GLfloat* matrix, IK_Rotation* bone_data, G308_Point rot_point);
+
+	//calculate a rotation around x/y/z at rot_point that will bring end closest to goal
+	quaternion calculateRotation(G308_Point goal, G308_Point rot_point, G308_Point end);
+
+	//given a bone pointer, find the IK_Rotation that matches that bone's id
+	IK_Rotation* find_IK_Rotation(int bone_id);
+
+	//return a vector representing teh vector p rotated by matrix matrix
+	G308_Point getRotatedVector(G308_Point p, float* matrix);
+
+	//normalise vector
+	G308_Point normalise(G308_Point);
+	//add vec parts
+	float vec_total(G308_Point);
 
 
 
@@ -102,14 +134,29 @@ public:
 	float rootRotation;
 	int numBones, selectedBone, selectedAxis;
 	float angle;
+	int step;
+	int iterations;
 	//find a bone by name
 	bone* findBone(char*);
+	bone* findBone(int);
 	//constructor destructor
-	Skeleton(char*);
+	Skeleton(char*, G308_Point);
 	~Skeleton();
 	//draw the skeleton
 	void display();
+	//IK methods
+	void setEndEffector(int, G308_Point);
+	//return a quaternion that is the current angle of the bone given
+	//by bone_id, this will also increase the rotation of that angle
+	//for the next call
+	quaternion* getRotation(int bone_id);
+	void setIterations(int i);
+	//attempt to generate a solution for this end goal and effector pair
+	void solveIK(G308_Point Goal, bone* end_effector);
+	void reset_angles();
 };
+
+
 
 
 #endif

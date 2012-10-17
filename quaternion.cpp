@@ -60,7 +60,6 @@ G308_Point scalarMultiply(G308_Point p, float q){
 }
 
 float vector_length(G308_Point vector) {
-	G308_Point squared;
 	float x = vector.x * vector.x;
 	float y = vector.y * vector.y;
 	float z = vector.z*vector.z;
@@ -174,7 +173,7 @@ quaternion quaternion::normalise() const {
 }
 
 void quaternion::print() const{
-	printf("(%.2f,%.2f.%.2f,%.2f)",a,b,c,d);
+	printf("(%.2f,%.2f.%.2f,%.2f)\n",a,b,c,d);
 }
 
 void quaternion::toMatrix(float* matrix) const {

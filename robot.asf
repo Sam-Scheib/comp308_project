@@ -1,0 +1,63 @@
+# AST/ASF file generated using VICON BodyLanguage
+# -----------------------------------------------
+:version 1.10
+:name VICON
+:units
+  mass 1.0
+  length 0.45
+  angle deg
+:documentation
+   .ast/.asf automatically generated from VICON data using
+   VICON BodyBuilder and BodyLanguage model FoxedUp or BRILLIANT.MOD
+:root
+   order TX TY TZ RX RY RZ
+   axis XYZ
+   position 0 0 0  
+   orientation 0 0 0 
+:bonedata
+  begin
+     id 1 
+     name joint1
+     direction 0 1 0 
+     length 5
+     axis 0 0 0  XYZ
+  end
+  begin
+     id 2 
+     name joint2
+     direction 0 1 0  
+     length 5
+     axis 0 0 0  XYZ
+    dof rx ry rz
+    limits (-160.0 20.0)
+           (-70.0 70.0)
+           (-60.0 70.0)
+  end
+  begin
+  	id 3
+  	name joint3
+  	direction 0 1 0
+  	length 5
+  	axis 0 0 0 XYZ
+  	dof rx ry rz
+  end
+  begin
+  	id 4
+  	name joint4
+  	length 5
+  	axis 0 0 0 XYZ
+  	dof rx ry rz
+  end
+  begin
+  	id 4
+  	name joint4
+  	length 5
+  	axis 0 0 0 XYZ
+  end
+:hierarchy
+  begin
+    root joint1 
+    joint1 joint2
+    joint2 joint3
+    joint3 joint4
+  end
