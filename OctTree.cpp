@@ -50,7 +50,7 @@ OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize) {
 	front->y = 0;
 	back->z = 1;
 	back->y = 0;
-	back->z = 0;
+	back->x = 0;
 	surfaceNode = true;
 	printf("created !!");
 
@@ -95,12 +95,12 @@ OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize,
 	right->z = 0;
 
 	front->z = -1;
-	front->x = 0;
 	front->y = 0;
+	front->x = 0;
 
 	back->z = 1;
 	back->y = 0;
-	back->z = 0;
+	back->x = 0;
 	surfaceNode =true;
 	printf("created !!children\n");
 }
@@ -114,9 +114,9 @@ void OctTree::add(){
 	pi->z = LowerLeftCorner.z+3;
 
 	G308_Point* vec = new G308_Point;
-	vec->x= -0.01;
-	vec->y = -0.01;
-	vec->z = -0.01;
+	vec->x= -0.00;
+	vec->y = -0.00;
+	vec->z = -0.05;
 
 	ball* b = new ball(0.2,*pi,*vec);
 	add(b);
@@ -333,47 +333,57 @@ void OctTree::performCollisions() {
 
 
 
-			if ((*iter)->position.x <  (rootnode->LowerLeftCorner.x)) {
+			if ((*iter)->position.x -(*iter)->radi <  (rootnode->LowerLeftCorner.x)) {
 
-												//if((*iter)->willcollidenormal(right)){
+												if((*iter)->willcollidenormal(left)){
 												printf("xcollide bot\n");
 												((*iter)->collideNormal(left));
 
-												//}
+												}
 											}
 
 
-			if ((*iter)->position.x >  (rootnode->LowerLeftCorner.x+rootnode->size)) {
+			if ((*iter)->position.x+(*iter)->radi >  (rootnode->LowerLeftCorner.x+rootnode->size)) {
 										//if((*iter)->willcollidenormal(right)){
-
+										if((*iter)->willcollidenormal(right)){
 										((*iter)->collideNormal(left));
+										}
 										printf("xcollide top\n");
 										//}
 									}
 
 
-			 if ((*iter)->position.y >  (rootnode->LowerLeftCorner.y+rootnode->size)) {
+			 if ((*iter)->position.y+(*iter)->radi >  (rootnode->LowerLeftCorner.y+rootnode->size)) {
 							//if((*iter)->willcollidenormal(right)){
+				 if((*iter)->willcollidenormal(bot)){
 							((*iter)->collideNormal(top));
+				 }
 							printf("ycollide top\n");
 							//}
 						}
-			 if ((*iter)->position.y <  rootnode->LowerLeftCorner.y) {
+			 if ((*iter)->position.y-(*iter)->radi <  rootnode->LowerLeftCorner.y) {
 									//if((*iter)->willcollidenormal(right)){
 									printf("something\n");
+									if((*iter)->willcollidenormal(top)){
 									((*iter)->collideNormal(bot));
-
+									}
 									//}
 			}
 
-			 if((*iter)->position.z<(rootnode->LowerLeftCorner.z)){
+			 if((*iter)->position.z-(*iter)->radi<(rootnode->LowerLeftCorner.z)){
+				 if((*iter)->willcollidenormal(front)){
 				 ((*iter)->collideNormal(front));
+				 }
 					printf("important\n");
 
 			 }
-			 if((*iter)->position.z>(rootnode->LowerLeftCorner.z+rootnode->size)){
-				 ((*iter)->collideNormal(front));
-					printf("collide front\n");
+			 if((*iter)->position.z+(*iter)->radi>(rootnode->LowerLeftCorner.z+rootnode->size)){
+				printf("?\n");
+				 if((*iter)->willcollidenormal(back)){
+				 ((*iter)->collideNormal(back));
+				 printf("collide front\n");
+				 }
+
 					//Works
 
 			 }

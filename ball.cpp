@@ -21,10 +21,10 @@ ball::ball(float rad, G308_Point position_in, G308_Point velocity_in) {
 
 void ball::applyTickMovement() {
 	//Gravity
-	//velocity.y = velocity.y + GRAVITY;
+
 
 	position = subtract(position, velocity);
-
+	velocity.y = velocity.y + GRAVITY;
 }
 
 float ball::radius(){
@@ -86,8 +86,8 @@ bool ball::collideNormal(G308_Point* normal) {
 					+ (normal->z * normal->z));
 	G308_Point normaldist = scalarMultiply(*normal, (1 / length));
 	float dotprod = dotProduct(velocity, normaldist);
-	G308_Point normVelocity = scalarMultiply(normaldist, 2*.8);
-	normVelocity = scalarMultiply(normVelocity, 0.8*dotprod);//hack
+	G308_Point normVelocity = scalarMultiply(normaldist, 2);
+	normVelocity = scalarMultiply(normVelocity, dotprod);//hack
 
 	velocity = subtract(velocity, normVelocity);
 
