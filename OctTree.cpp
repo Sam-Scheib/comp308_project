@@ -22,9 +22,9 @@ OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize) {
 	ballNumber = 0;
 	childrenpresent = false;
 	balls = new std::set<ball*>();
-	if (depth == 0) {
+
 		rootnode = this;
-	}
+
 	LowerLeftCorner = *bottomleftCorner;
 
 	top = new G308_Point;
@@ -51,6 +51,8 @@ OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize) {
 	back->z = 1;
 	back->y = 0;
 	back->z = 0;
+	surfaceNode = true;
+	printf("created !!");
 
 }
 
@@ -75,24 +77,32 @@ OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize,
 	right = new G308_Point;
 	front = new G308_Point;
 	back = new G308_Point;
+
 	top->x = 0;
 	top->y = -1;
 	top->z = 0;
+
 	bot->x = 0;
 	bot->y = 1;
 	bot->z = 0;
+
 	left->x = -1;
 	left->y = 0;
 	left->z = 0;
+
 	right->x = 1;
 	right->y = 0;
 	right->z = 0;
+
 	front->z = -1;
 	front->x = 0;
 	front->y = 0;
+
 	back->z = 1;
 	back->y = 0;
 	back->z = 0;
+	surfaceNode =true;
+	printf("created !!children\n");
 }
 
 void OctTree::add(){
@@ -117,21 +127,22 @@ void OctTree::add(){
  */
 void OctTree::add(ball* ball) {
 
-	if (childrenpresent) {
+	if (surfaceNode==false) {
 		whichchildren(ball, true);
 
 	} else {
 		ballNumber++;
 
 		balls->insert(ball);
-		//if (ballNumber > MAX_OBJ_PERTREE) {
-		//	splitSelf();
-		//}
+		if (balls->size() > MAX_OBJ_PERTREE&&depth<3) {
+			surfaceNode=false;
+		splitSelf();
+		}
 	}
 
 }
 void OctTree::renderTree() {
-	if(childrenpresent==true){
+if(childrenpresent){
 		for(int x = 0; x<2;x++){
 			for(int y = 0; y<2;y++){
 				for(int z=0;z<2;z++){
@@ -139,16 +150,16 @@ void OctTree::renderTree() {
 				}
 			}
 		}
+}
 
 
-	}else{
 	glPushMatrix();
 	glTranslatef(LowerLeftCorner.x+((1.0/2.0)*size),LowerLeftCorner.y+((1.0/2.0)*size),LowerLeftCorner.z+((1.0/2.0)*size));
-	printf("%f %f %f: lowerleftx y z\n",LowerLeftCorner.x,LowerLeftCorner.y,LowerLeftCorner.z);
-	printf("size %f \n", size);
+	//printf("%f %f %f: lowerleftx y z\n",LowerLeftCorner.x,LowerLeftCorner.y,LowerLeftCorner.z);
+	//printf("size %f \n", size);
 	glutWireCube(size);
 	glPopMatrix();
-	}
+
 	}
 
 void OctTree::whichchildren(ball* ball, bool addflag) {
@@ -170,44 +181,44 @@ void OctTree::whichchildren(ball* ball, bool addflag) {
 	unsigned char possiblechildren = 0;
 
 	if (xmax > LowerLeftCorner.x + childsize) {
-		puts("x1");
+	//	puts("x1");
 		possiblechildren = possiblechildren | X_TOP;
 		if (xmin < LowerLeftCorner.x + childsize) {
-			puts("x2");
+		//	puts("x2");
 			possiblechildren = possiblechildren | X_BOT;
 		}
 
 	} else {
-		printf("X size %f, llc %f, child %f\n", xmax, LowerLeftCorner.x, childsize);
-		puts("x3");
+		//printf("X size %f, llc %f, child %f\n", xmax, LowerLeftCorner.x, childsize);
+		//puts("x3");
 		possiblechildren = possiblechildren | X_BOT;
 	}
 
 	if (ymax > LowerLeftCorner.y + childsize) {
-		puts("y1");
+		//puts("y1");
 		possiblechildren = possiblechildren | Y_TOP;
 		if (ymin < LowerLeftCorner.y + childsize) {
-			puts("y2");
+			//puts("y2");
 			possiblechildren = possiblechildren | Y_BOT;
 		}
 
 	} else {
-		printf("Y size %f, llc %f, child %f\n", ymax, LowerLeftCorner.y, childsize);
-		puts("y3");
+		//printf("Y size %f, llc %f, child %f\n", ymax, LowerLeftCorner.y, childsize);
+		//puts("y3");
 		possiblechildren = possiblechildren | Y_BOT;
 	}
 
 	if (zmax > LowerLeftCorner.z + childsize) {
-		puts("z1");
+		//puts("z1");
 		possiblechildren = possiblechildren | Z_TOP;
-		if (zmin < LowerLeftCorner.z + childsize) {\
-			puts("z2");
+		if (zmin < LowerLeftCorner.z + childsize) {
+			//puts("z2");
 			possiblechildren = possiblechildren | Z_BOT;
 		}
 
 	} else {
-		printf("Z size %f, llc %f, child %f\n", zmax, LowerLeftCorner.z, childsize);
-		puts("z3");
+		//printf("Z size %f, llc %f, childsize %f\n", zmax, LowerLeftCorner.z, childsize);
+		//puts("z3");
 		possiblechildren = possiblechildren | Z_BOT;
 	}
 
@@ -223,7 +234,7 @@ void OctTree::whichchildren(ball* ball, bool addflag) {
 				y = 1;
 
 			if (addflag) {
-				printf("inserting %d %d %d\n",x,y,z);
+			//	printf("inserting %d %d %d\n",x,y,z);
 				children[x][y][z]->add(ball);
 			} else {
 				children[x][y][z]->remove(ball);
@@ -323,6 +334,7 @@ void OctTree::performCollisions() {
 
 
 			if ((*iter)->position.x <  (rootnode->LowerLeftCorner.x)) {
+
 												//if((*iter)->willcollidenormal(right)){
 												printf("xcollide bot\n");
 												((*iter)->collideNormal(left));
@@ -331,7 +343,7 @@ void OctTree::performCollisions() {
 											}
 
 
-			if ((*iter)->position.x >  (rootnode->LowerLeftCorner.x+size)) {
+			if ((*iter)->position.x >  (rootnode->LowerLeftCorner.x+rootnode->size)) {
 										//if((*iter)->willcollidenormal(right)){
 
 										((*iter)->collideNormal(left));
@@ -340,7 +352,7 @@ void OctTree::performCollisions() {
 									}
 
 
-			 if ((*iter)->position.y >  (rootnode->LowerLeftCorner.y+size)) {
+			 if ((*iter)->position.y >  (rootnode->LowerLeftCorner.y+rootnode->size)) {
 							//if((*iter)->willcollidenormal(right)){
 							((*iter)->collideNormal(top));
 							printf("ycollide top\n");
@@ -359,7 +371,7 @@ void OctTree::performCollisions() {
 					printf("important\n");
 
 			 }
-			 if((*iter)->position.z>(rootnode->LowerLeftCorner.z+size)){
+			 if((*iter)->position.z>(rootnode->LowerLeftCorner.z+rootnode->size)){
 				 ((*iter)->collideNormal(front));
 					printf("collide front\n");
 					//Works
@@ -450,18 +462,17 @@ void OctTree::moveBalls() {
 
 void OctTree::splitSelf() {
 	//If this operation has performed, we now have children
-	childrenpresent = true;
+
 	float childsize = size / 2;
 	G308_Point* childnodepos = new G308_Point;
 
 	for (int x = 0; x < 2; x++) {
-		childnodepos->x = botleft->x + x * childsize;
+		childnodepos->x = LowerLeftCorner.x + x * childsize;
 		for (int y = 0; y < 2; y++) {
-			childnodepos->y = botleft->y + y * childsize;
+			childnodepos->y = LowerLeftCorner.y + y * childsize;
 			for (int z = 0; z < 2; z++) {
-				childnodepos->z = botleft->z + z * childsize;
-				children[x][y][z] = new OctTree(depth + 1, childnodepos,
-						childsize, rootnode);
+				childnodepos->z = LowerLeftCorner.z + z * childsize;
+				children[x][y][z] = new OctTree(depth + 1, childnodepos, childsize, rootnode);
 
 			}
 		}
@@ -470,13 +481,16 @@ void OctTree::splitSelf() {
 
 	//Put things in the right hole
 	ballNumber=0;
-	for (set<ball*>::iterator iter = balls->begin(); iter != balls->end();
+	set<ball*> *temp = new set<ball*>;
+	temp->insert(balls->begin(),balls->end());
+	balls->clear();
+	for (set<ball*>::iterator iter = temp->begin(); iter != temp->end();
 			++iter) {
-		add(*iter);
+		whichchildren(*iter,true);
 
 	}
-	balls->clear();
 
+	childrenpresent = true;
 
 }
 

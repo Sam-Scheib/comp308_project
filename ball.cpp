@@ -105,7 +105,7 @@ bool ball::collision(ball* object) {
 	G308_Point area;
 	temp = scalarMultiply(normaldist, 2);
 	temp2 = dotProduct(temp, velocity);
-	area = scalarMultiply(temp, temp2*.8);
+	area = scalarMultiply(temp, temp2);
 	velocity = subtract(velocity, area);
 	temp2 = dotProduct(temp, *object->getVector());
 	area = scalarMultiply(temp, temp2);

@@ -160,8 +160,6 @@ int main(int argc, char** argv)
 
 	ballSim = new OctTree(0,bottomleft,size);
 
-	if(b1==b2)
-			printf("fuck\n");
 
 	}
 
