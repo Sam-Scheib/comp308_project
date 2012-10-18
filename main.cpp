@@ -181,7 +181,7 @@ int main(int argc, char** argv)
 void PrintFPS() {
 char buffer[10] ;
 int Nb = sprintf(buffer, " FPS : %3.1f", FPS) ;
-printf("%s\n", buffer);
+
 glMatrixMode(GL_PROJECTION);
 glPushMatrix();
 

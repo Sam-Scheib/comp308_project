@@ -384,7 +384,7 @@ void OctTree::performCollisions() {
 			}
 			if ((*iter)->position.z + (*iter)->radi
 					> (rootnode->LowerLeftCorner.z + rootnode->size)) {
-				//printf("?\n");
+			//	printf("?\n");
 				if ((*iter)->willcollidenormal(back)) {
 					((*iter)->collideNormal(back));
 
