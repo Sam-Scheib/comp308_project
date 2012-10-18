@@ -27,7 +27,7 @@ OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize) {
 	childrenpresent = false;
 	balls = new std::set<ball*>();
 
-		rootnode = this;
+	rootnode = this;
 
 	LowerLeftCorner = *bottomleftCorner;
 
@@ -56,7 +56,6 @@ OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize) {
 	back->y = 0;
 	back->x = 0;
 	surfaceNode = true;
-	printf("created !!");
 
 }
 
@@ -105,31 +104,30 @@ OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize,
 	back->z = 1;
 	back->y = 0;
 	back->x = 0;
-	surfaceNode =true;
-	printf("created !!children\n");
+	surfaceNode = true;
+
 }
 
-void OctTree::add(){
+void OctTree::add() {
 	G308_Point* pi = new G308_Point;
-	pi->x = LowerLeftCorner.x+rand()%10;
+	pi->x = LowerLeftCorner.x + rand() % 10;
 
-	pi->y = LowerLeftCorner.y+rand()%10;
+	pi->y = LowerLeftCorner.y + rand() % 10;
 
-	pi->z = LowerLeftCorner.z+rand()%10;
+	pi->z = LowerLeftCorner.z + rand() % 10;
 
 	G308_Point* vec = new G308_Point;
 
-	vec->x= rand()%100;
-	vec->y =rand()%100;
-	vec->z = rand()%100;
-
+	vec->x = rand() % 100;
+	vec->y = rand() % 100;
+	vec->z = rand() % 100;
 
 	float length = sqrt(
-					(vec->x * vec->x) + (vec->y * vec->y)+ (vec->z *vec->z));
-			*vec = scalarMultiply(*vec, (1 / (length)));
-			*vec = scalarMultiply(*vec, 0.04);
+			(vec->x * vec->x) + (vec->y * vec->y) + (vec->z * vec->z));
+	*vec = scalarMultiply(*vec, (1 / (length)));
+	*vec = scalarMultiply(*vec, 0.04);
 
-	ball* b = new ball(0.2,*pi,*vec);
+	ball* b = new ball(0.2, *pi, *vec);
 	add(b);
 }
 /*
@@ -138,40 +136,39 @@ void OctTree::add(){
  */
 void OctTree::add(ball* ball) {
 
-	if (surfaceNode==false) {
+	if (surfaceNode == false) {
 		whichchildren(ball, true);
 
 	} else {
 		ballNumber++;
 
 		balls->insert(ball);
-		if (balls->size() > MAX_OBJ_PERTREE&&depth<3) {
-			surfaceNode=false;
-		splitSelf();
+		if (balls->size() > MAX_OBJ_PERTREE && depth < 3) {
+			surfaceNode = false;
+			splitSelf();
 		}
 	}
 
 }
 void OctTree::renderTree() {
-if(childrenpresent){
-		for(int x = 0; x<2;x++){
-			for(int y = 0; y<2;y++){
-				for(int z=0;z<2;z++){
+	if (childrenpresent) {
+		for (int x = 0; x < 2; x++) {
+			for (int y = 0; y < 2; y++) {
+				for (int z = 0; z < 2; z++) {
 					children[x][y][z]->renderTree();
 				}
 			}
 		}
-}
-
+	}
 
 	glPushMatrix();
-	glTranslatef(LowerLeftCorner.x+((1.0/2.0)*size),LowerLeftCorner.y+((1.0/2.0)*size),LowerLeftCorner.z+((1.0/2.0)*size));
-	//printf("%f %f %f: lowerleftx y z\n",LowerLeftCorner.x,LowerLeftCorner.y,LowerLeftCorner.z);
-	//printf("size %f \n", size);
+	glTranslatef(LowerLeftCorner.x + ((1.0 / 2.0) * size),
+			LowerLeftCorner.y + ((1.0 / 2.0) * size),
+			LowerLeftCorner.z + ((1.0 / 2.0) * size));
 	glutWireCube(size);
 	glPopMatrix();
 
-	}
+}
 
 void OctTree::whichchildren(ball* ball, bool addflag) {
 	float xmax = ball->getPosition()->x + ball->radi;
@@ -192,10 +189,10 @@ void OctTree::whichchildren(ball* ball, bool addflag) {
 	unsigned char possiblechildren = 0;
 
 	if (xmax > LowerLeftCorner.x + childsize) {
-	//	puts("x1");
+		//	puts("x1");
 		possiblechildren = possiblechildren | X_TOP;
 		if (xmin < LowerLeftCorner.x + childsize) {
-		//	puts("x2");
+			//	puts("x2");
 			possiblechildren = possiblechildren | X_BOT;
 		}
 
@@ -245,7 +242,7 @@ void OctTree::whichchildren(ball* ball, bool addflag) {
 				y = 1;
 
 			if (addflag) {
-			//	printf("inserting %d %d %d\n",x,y,z);
+				//	printf("inserting %d %d %d\n",x,y,z);
 				children[x][y][z]->add(ball);
 			} else {
 				children[x][y][z]->remove(ball);
@@ -334,7 +331,7 @@ void OctTree::performCollisions() {
 					ball* b1 = *iter;
 					ball* b2 = *rator;
 					if (b1->ballwillcollide(b2)) {
-						printf("collisen tered~~~~~~~~~~~~~~~\n");
+						//printf("collisen tered~~~~~~~~~~~~~~~\n");
 						b1->collision(b2);
 					}
 
@@ -342,105 +339,98 @@ void OctTree::performCollisions() {
 
 			}
 
+			if ((*iter)->position.x - (*iter)->radi
+					< (rootnode->LowerLeftCorner.x)) {
 
+				if ((*iter)->willcollidenormal(left)) {
 
-			if ((*iter)->position.x -(*iter)->radi <  (rootnode->LowerLeftCorner.x)) {
+					((*iter)->collideNormal(left));
 
-												if((*iter)->willcollidenormal(left)){
-												printf("xcollide bot\n");
-												((*iter)->collideNormal(left));
-
-												}
-											}
-
-
-			if ((*iter)->position.x+(*iter)->radi >  (rootnode->LowerLeftCorner.x+rootnode->size)) {
-										//if((*iter)->willcollidenormal(right)){
-										if((*iter)->willcollidenormal(right)){
-										((*iter)->collideNormal(left));
-										}
-										printf("xcollide top\n");
-										//}
-									}
-
-
-			 if ((*iter)->position.y+(*iter)->radi >  (rootnode->LowerLeftCorner.y+rootnode->size)) {
-							//if((*iter)->willcollidenormal(right)){
-				 if((*iter)->willcollidenormal(bot)){
-							((*iter)->collideNormal(top));
-				 }
-							printf("ycollide top\n");
-							//}
-						}
-			 if ((*iter)->position.y-(*iter)->radi <  rootnode->LowerLeftCorner.y) {
-									//if((*iter)->willcollidenormal(right)){
-									printf("something\n");
-									if((*iter)->willcollidenormal(top)){
-									((*iter)->collideNormal(bot));
-									}
-									//}
+				}
 			}
 
-			 if((*iter)->position.z-(*iter)->radi<(rootnode->LowerLeftCorner.z)){
-				 if((*iter)->willcollidenormal(front)){
-				 ((*iter)->collideNormal(front));
-				 }
-					printf("important\n");
+			if ((*iter)->position.x + (*iter)->radi
+					> (rootnode->LowerLeftCorner.x + rootnode->size)) {
 
-			 }
-			 if((*iter)->position.z+(*iter)->radi>(rootnode->LowerLeftCorner.z+rootnode->size)){
-				printf("?\n");
-				 if((*iter)->willcollidenormal(back)){
-				 ((*iter)->collideNormal(back));
-				 printf("collide front\n");
-				 }
+				if ((*iter)->willcollidenormal(right)) {
+					((*iter)->collideNormal(left));
+				}
 
-					//Works
+			}
 
-			 }
+			if ((*iter)->position.y + (*iter)->radi
+					> (rootnode->LowerLeftCorner.y + rootnode->size)) {
 
+				if ((*iter)->willcollidenormal(bot)) {
+					((*iter)->collideNormal(top));
+				}
 
+			}
+			if ((*iter)->position.y - (*iter)->radi
+					< rootnode->LowerLeftCorner.y) {
+				;
+				if ((*iter)->willcollidenormal(top)) {
+					((*iter)->collideNormal(bot));
+				}
 
+			}
 
+			if ((*iter)->position.z - (*iter)->radi
+					< (rootnode->LowerLeftCorner.z)) {
+				if ((*iter)->willcollidenormal(front)) {
+					((*iter)->collideNormal(front));
+				}
+
+			}
+			if ((*iter)->position.z + (*iter)->radi
+					> (rootnode->LowerLeftCorner.z + rootnode->size)) {
+				//printf("?\n");
+				if ((*iter)->willcollidenormal(back)) {
+					((*iter)->collideNormal(back));
+
+				}
+
+				//Works
+
+			}
 
 			(*iter)->render();
 
 			//DIRTY HACK REMOVE BEFORE SHOWING ANYONE
 			/*
-			if ((*iter)->position.x > 10) {
-				if ((*iter)->willcollidenormal(right)) {
-					((*iter)->collideNormal(right));
-				};
-			}
-			else if ((*iter)->position.x < -10) {
+			 if ((*iter)->position.x > 10) {
+			 if ((*iter)->willcollidenormal(right)) {
+			 ((*iter)->collideNormal(right));
+			 };
+			 }
+			 else if ((*iter)->position.x < -10) {
 
-				if((*iter)->willcollidenormal(bot)){
-					((*iter)->collideNormal(bot));
-				}
-			} else if ((*iter)->position.y < - 10) {
-				if((*iter)->willcollidenormal(left)){
-					(*iter)->collideNormal(left);
-				}
+			 if((*iter)->willcollidenormal(bot)){
+			 ((*iter)->collideNormal(bot));
+			 }
+			 } else if ((*iter)->position.y < - 10) {
+			 if((*iter)->willcollidenormal(left)){
+			 (*iter)->collideNormal(left);
+			 }
 
-			}else if ((*iter)->position.y >  10) {
-				//if((*iter)->willcollidenormal(right)){
-				printf("something\n");
-				((*iter)->collideNormal(top));
+			 }else if ((*iter)->position.y >  10) {
+			 //if((*iter)->willcollidenormal(right)){
+			 printf("something\n");
+			 ((*iter)->collideNormal(top));
 
-				//}
-			}else if ((*iter)->position.z > +10){
-				if((*iter)->willcollidenormal(back)){
-					(*iter)->collideNormal(back);
-				}
-			}else if ((*iter)->position.z< -10){
-				if((*iter)->willcollidenormal(front)){
-				(*iter)->collideNormal(front);
-				}
+			 //}
+			 }else if ((*iter)->position.z > +10){
+			 if((*iter)->willcollidenormal(back)){
+			 (*iter)->collideNormal(back);
+			 }
+			 }else if ((*iter)->position.z< -10){
+			 if((*iter)->willcollidenormal(front)){
+			 (*iter)->collideNormal(front);
+			 }
 
-			}
-			*/
+			 }
+			 */
 			//~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 		}
 
@@ -493,7 +483,8 @@ void OctTree::splitSelf() {
 			childnodepos->y = LowerLeftCorner.y + y * childsize;
 			for (int z = 0; z < 2; z++) {
 				childnodepos->z = LowerLeftCorner.z + z * childsize;
-				children[x][y][z] = new OctTree(depth + 1, childnodepos, childsize, rootnode);
+				children[x][y][z] = new OctTree(depth + 1, childnodepos,
+						childsize, rootnode);
 
 			}
 		}
@@ -501,13 +492,13 @@ void OctTree::splitSelf() {
 	}
 
 	//Put things in the right hole
-	ballNumber=0;
+	ballNumber = 0;
 	set<ball*> *temp = new set<ball*>;
-	temp->insert(balls->begin(),balls->end());
+	temp->insert(balls->begin(), balls->end());
 	balls->clear();
 	for (set<ball*>::iterator iter = temp->begin(); iter != temp->end();
 			++iter) {
-		whichchildren(*iter,true);
+		whichchildren(*iter, true);
 
 	}
 
