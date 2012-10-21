@@ -19,6 +19,9 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include <math.h>
+#include <time.h>
+clock_t start, finish ;
+double duration, frames, FPS ;
 
 
 // My definition b
@@ -63,7 +66,7 @@ ball* b1 ;
 ball* b2;
 ball* b3;
 ball* b4;
-
+int numballs=0;
 
 Fluid* fluidSim;
 
@@ -115,6 +118,8 @@ int main(int argc, char** argv)
 	glutKeyboardFunc(G308_keyboardListener);
 	glutMouseFunc(G308_mouseListener);
 	glutMotionFunc(G308_mouseMovement);
+	start = 0;
+	finish = 0;
 
 	// angle camera down
 	G308_mouseMovement(0, 20);
@@ -160,9 +165,7 @@ int main(int argc, char** argv)
 
 	ballSim = new OctTree(0,bottomleft,size);
 
-//	if(b1==b2)
-//			//printf("fuck\n");
-//
+
 	}
 
 	G308_SetLight();
@@ -172,6 +175,32 @@ int main(int argc, char** argv)
 	glutMainLoop();
 
 	return 0;
+}
+
+
+void PrintFPS() {
+char buffer[10] ;
+int Nb = sprintf(buffer, " FPS : %3.1f", FPS) ;
+
+glMatrixMode(GL_PROJECTION);
+glPushMatrix();
+
+glLoadIdentity();
+
+gluOrtho2D(0,G308_WIN_WIDTH,0,G308_WIN_HEIGHT);
+glMatrixMode(GL_MODELVIEW);
+glPushMatrix();
+glLoadIdentity();
+glRasterPos2i(10, 10) ;
+void* font = GLUT_BITMAP_9_BY_15 ;
+
+for (int i = 0; i < Nb; i++) {
+	glutBitmapCharacter(font,buffer[i]);
+}
+glMatrixMode(GL_MODELVIEW);
+glPopMatrix();
+glMatrixMode(GL_PROJECTION);
+glPopMatrix();
 }
 
 // Display function
@@ -207,7 +236,9 @@ void G308_Display()
 		ballSim->performCollisions();
 		ballSim->renderTree();
 		glPopMatrix();
-
+		if(numballs!=0){
+		printf("Number of balls: %d \n",numballs);
+		}
 
 	}
 
@@ -242,6 +273,23 @@ void G308_Display()
 	}
 
 
+	finish = glutGet(GLUT_ELAPSED_TIME) ;
+
+	duration = (double)(finish - start) ;
+	frames++;
+	if(duration>=1000){
+		start = finish ;
+
+		FPS = (frames / (duration)*1000);
+
+		frames = 0;
+	}
+	PrintFPS();
+
+
+
+
+	//frames=0;
 
 
 	//	SpotLight();
@@ -380,6 +428,8 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 	//	break;
 	case 'n':
 		ballSim->add();
+		numballs++;
+		printf("Number of balls: %d",numballs);
 
 
 
