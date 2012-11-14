@@ -534,3 +534,7 @@ void Fluid::generateTerrain() {
 	glEnd();
 	glEndList();
 }
+
+void Fluid::checkSurfaceHit(int x, int y) {
+
+}

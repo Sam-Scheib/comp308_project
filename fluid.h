@@ -44,5 +44,6 @@ public:
 	float getTopWavePoint();
 	float getBottomWavePoint();
 	void displayFluid();
+	void checkSurfaceHit(int x, int y);
 };
 
