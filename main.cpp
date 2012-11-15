@@ -161,7 +161,7 @@ int main(int argc, char** argv)
 		bottomleft->x=-5.0f;
 		bottomleft->y=-5.0f;
 		bottomleft->z=-5.0f;
-		float size = rows-3;
+		float size = rows-5;
 
 	ballSim = new OctTree(0,bottomleft,size, fluidSim);
 
@@ -231,7 +231,7 @@ void G308_Display()
 	if(displayBalls){
 		//ballSim = new OctTree();
 		glPushMatrix();
-		glTranslatef(6,-10,6);
+		glTranslatef(7,-10,7);
 		ballSim->moveBalls();
 		ballSim->performCollisions();
 		ballSim->renderTree();

@@ -28,7 +28,8 @@ Fluid::Fluid(int row, int col) {
 	slope = -2.0;
 	rows = row;
 	cols = col;
-
+	bottomHeight= waterheight;
+	topHeight = waterheight;
 	srand(time(NULL));
 
 	heights = (float**) calloc(row, sizeof(float*));
@@ -546,7 +547,7 @@ float Fluid::checkSurfaceHit(int x, int y) {
 }
 
 void Fluid::ripple(int x, int y) {
-	if (x < 2 || x > rows-2 || y < 2 || y > cols-2)
+	if (x < 2 || x > rows-3 || y < 2 || y > cols-3)
 		return;
 	float amount = 0.2;
 	velocities[x][y] -= amount;

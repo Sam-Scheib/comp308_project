@@ -14,7 +14,9 @@
 #include "math.h"
 
 //change these
-
+float Yoffset=10;
+float Xoffset = 6;
+float Zoffset = 6;
 OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize, Fluid* fluidx) {
 	// TODO Auto-generated constructor stub
 	depth = currentLevel;
@@ -125,7 +127,7 @@ void OctTree::add() {
 	float length = sqrt(
 			(vec->x * vec->x) + (vec->y * vec->y) + (vec->z * vec->z));
 	*vec = scalarMultiply(*vec, (1 / (length)));
-	*vec = scalarMultiply(*vec, 0.04);
+	//*vec = scalarMultiply(*vec, 0.04);
 
 	ball* b = new ball(0.2, *pi, *vec);
 	add(b);
@@ -165,7 +167,7 @@ void OctTree::renderTree() {
 	glTranslatef(LowerLeftCorner.x + (0.5 * size),
 			LowerLeftCorner.y + (0.5 * size),
 			LowerLeftCorner.z + (0.5 * size));
-	glutWireCube(size);
+	//glutWireCube(size);
 	glPopMatrix();
 
 }
@@ -367,13 +369,17 @@ void OctTree::performCollisions() {
 
 			}
 			if ((*iter)->position.y - (*iter)->radi
-					< rootnode->LowerLeftCorner.y) {
-				;
+					< fluid->topHeight+Yoffset) {
+				 int x =(int)((*iter)->position.x+0.5);
+				int y =(int) ((*iter)->position.z +0.5);
+				float height = fluid->checkSurfaceHit(x+Xoffset,y+Zoffset);
+				if(height+Yoffset >= (*iter)->position.y){
 				if ((*iter)->willcollidenormal(top)) {
 					((*iter)->collideNormal(bot));
+					fluid->ripple(x+Xoffset,y+Zoffset);
 					//This is where we insert the collsion stuff for his stuff.
-					// If sam can make his thing square, we just have to match the size, get the x,y position of the ball, which should map relatively easily to the forrect thing
-				}
+					// If sam can make his thing square, we just hnnnnnnnnn
+				}}
 
 			}
 
@@ -397,42 +403,6 @@ void OctTree::performCollisions() {
 			}
 
 			(*iter)->render();
-
-			//DIRTY HACK REMOVE BEFORE SHOWING ANYONE
-			/*
-			 if ((*iter)->position.x > 10) {
-			 if ((*iter)->willcollidenormal(right)) {
-			 ((*iter)->collideNormal(right));
-			 };
-			 }
-			 else if ((*iter)->position.x < -10) {
-
-			 if((*iter)->willcollidenormal(bot)){
-			 ((*iter)->collideNormal(bot));
-			 }
-			 } else if ((*iter)->position.y < - 10) {
-			 if((*iter)->willcollidenormal(left)){
-			 (*iter)->collideNormal(left);
-			 }
-
-			 }else if ((*iter)->position.y >  10) {
-			 //if((*iter)->willcollidenormal(right)){
-			 printf("something\n");
-			 ((*iter)->collideNormal(top));
-
-			 //}
-			 }else if ((*iter)->position.z > +10){
-			 if((*iter)->willcollidenormal(back)){
-			 (*iter)->collideNormal(back);
-			 }
-			 }else if ((*iter)->position.z< -10){
-			 if((*iter)->willcollidenormal(front)){
-			 (*iter)->collideNormal(front);
-			 }
-
-			 }
-			 */
-			//~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 		}
 

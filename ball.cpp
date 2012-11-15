@@ -25,7 +25,7 @@ void ball::applyTickMovement() {
 				(velocity.x * velocity.x) + (velocity.y * velocity.y)
 						+ (velocity.z * velocity.z));
 		velocity = scalarMultiply(velocity, (1 / (length)));
-		velocity = scalarMultiply(velocity, 0.04);
+	//	velocity = scalarMultiply(velocity, 0.04);
 	position = subtract(position, velocity);
 	velocity.y = velocity.y + GRAVITY;
 }
@@ -37,6 +37,7 @@ float ball::radius(){
 void ball::render() {
 	glPushMatrix();
 	glTranslatef(position.x, position.y, position.z);
+	glColor3f(0.0,1.0,0.0);
 	glutSolidSphere(radi, 12, 12);
 	glTranslatef(-position.x, -position.y, -position.z);
 	glPopMatrix();
