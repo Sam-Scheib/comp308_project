@@ -15,7 +15,7 @@
 
 //change these
 
-OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize) {
+OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize, Fluid* fluidx) {
 	// TODO Auto-generated constructor stub
 	depth = currentLevel;
 	botleft = bottomleftCorner;
@@ -26,7 +26,7 @@ OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize) {
 	ballNumber = 0;
 	childrenpresent = false;
 	balls = new std::set<ball*>();
-
+	fluid= fluidx;
 	rootnode = this;
 
 	LowerLeftCorner = *bottomleftCorner;
@@ -60,12 +60,12 @@ OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize) {
 }
 
 OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize,
-		OctTree* rootnodea) {
+		OctTree* rootnodea, Fluid* xfluid) {
 	depth = currentLevel;
 	botleft = bottomleftCorner;
 	size = isize;
 	rootnode = rootnodea;
-
+	fluid = xfluid;
 	MAX_OBJ_PERTREE = 3;
 
 	level = 0;
@@ -110,11 +110,11 @@ OctTree::OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize,
 
 void OctTree::add() {
 	G308_Point* pi = new G308_Point;
-	pi->x = LowerLeftCorner.x + rand() % 10;
+	pi->x = LowerLeftCorner.x + rand() % (int)size;
 
-	pi->y = LowerLeftCorner.y + rand() % 10;
+	pi->y = (LowerLeftCorner.y + rand() % (int)size/2)+size/3;
 
-	pi->z = LowerLeftCorner.z + rand() % 10;
+	pi->z = LowerLeftCorner.z + rand() % (int)size;
 
 	G308_Point* vec = new G308_Point;
 
@@ -162,9 +162,9 @@ void OctTree::renderTree() {
 	}
 
 	glPushMatrix();
-	glTranslatef(LowerLeftCorner.x + ((1.0 / 2.0) * size),
-			LowerLeftCorner.y + ((1.0 / 2.0) * size),
-			LowerLeftCorner.z + ((1.0 / 2.0) * size));
+	glTranslatef(LowerLeftCorner.x + (0.5 * size),
+			LowerLeftCorner.y + (0.5 * size),
+			LowerLeftCorner.z + (0.5 * size));
 	glutWireCube(size);
 	glPopMatrix();
 
@@ -371,6 +371,8 @@ void OctTree::performCollisions() {
 				;
 				if ((*iter)->willcollidenormal(top)) {
 					((*iter)->collideNormal(bot));
+					//This is where we insert the collsion stuff for his stuff.
+					// If sam can make his thing square, we just have to match the size, get the x,y position of the ball, which should map relatively easily to the forrect thing
 				}
 
 			}
@@ -484,7 +486,7 @@ void OctTree::splitSelf() {
 			for (int z = 0; z < 2; z++) {
 				childnodepos->z = LowerLeftCorner.z + z * childsize;
 				children[x][y][z] = new OctTree(depth + 1, childnodepos,
-						childsize, rootnode);
+						childsize, rootnode, fluid);
 
 			}
 		}

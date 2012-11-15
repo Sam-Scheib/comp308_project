@@ -8,14 +8,14 @@
 
 #include <set>
 #include "ball.h"
-
+#include "fluid.h"
 using namespace std;
 
 
 class OctTree {
 public:
-	OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize);
-	OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize, OctTree* rootnode);
+	OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize, Fluid*);
+	OctTree(int currentLevel, G308_Point* bottomleftCorner, float isize, OctTree* rootnode, Fluid*);
 	G308_Point LowerLeftCorner;
 	G308_Point UpperRightcorner;
 	G308_Point center;
@@ -31,7 +31,7 @@ public:
 	G308_Point* right ;
 	G308_Point* front ;
 	G308_Point* back ;
-
+	Fluid* fluid;
 	int MAX_TREE_DEPTH ;
 	int MIN_OBJ_PERTREE ;
 	int MAX_OBJ_PERTREE ;

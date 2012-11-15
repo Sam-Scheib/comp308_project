@@ -6,8 +6,8 @@
  *
  */
 #include "define.h"
-#include "shader.h"
-#include "FBO.h"
+//#include "shader.h"
+//#include "FBO.h"
 
 class Fluid {
 
@@ -19,8 +19,8 @@ private:
 	float** ground;
 	float** velocities;
 	G308_Point** normals;
-	ShaderProgram* shader;
-	FBO *from, *to;
+//	ShaderProgram* shader;
+//	FBO *from, *to;
 	void calcluateNormals(float**);
 	void generateTerrain();
 	void bowlTerrain();

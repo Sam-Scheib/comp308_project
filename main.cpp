@@ -28,7 +28,7 @@ double duration, frames, FPS ;
 #include "define.h"
 #include "quaternion.h"
 #include "imageLoader.h"
-#include "fluid.h"
+//#include "fluid.h"
 
 //defines for ik
 #include "G308_Skeleton.h"
@@ -161,9 +161,9 @@ int main(int argc, char** argv)
 		bottomleft->x=-5.0f;
 		bottomleft->y=-5.0f;
 		bottomleft->z=-5.0f;
-		float size = 10;
+		float size = rows-3;
 
-	ballSim = new OctTree(0,bottomleft,size);
+	ballSim = new OctTree(0,bottomleft,size, fluidSim);
 
 
 	}
@@ -221,7 +221,7 @@ void G308_Display()
 
 	// Call indivudal display methods here
 	if (displayFluid) {
-		fluidSim->glInit();
+		//fluidSim->glInit();
 		if (waterFlowing)
 			fluidSim->calculateSurface();
 		fluidSim->displayFluid();
@@ -231,7 +231,7 @@ void G308_Display()
 	if(displayBalls){
 		//ballSim = new OctTree();
 		glPushMatrix();
-		glTranslatef(-10,0,0);
+		glTranslatef(6,-10,6);
 		ballSim->moveBalls();
 		ballSim->performCollisions();
 		ballSim->renderTree();
@@ -406,19 +406,19 @@ void G308_keyboardListener(unsigned char key, int x, int y) {
 		break;
 		// pan up
 	case 'e':
-		panning(0.0, 1.0);
+		panning(0.0, 0.2);
 		break;
 		// pan down
 	case 'q':
-		panning(0.0, -1.0);
+		panning(0.0, -0.2);
 		break;
 		// pan left
 	case 'a':
-		panning(1.0, 0.0);
+		panning(0.2, 0.0);
 		break;
 		// pan right
 	case 'd':
-		panning(-1.0, 0.0);
+		panning(-0.2, 0.0);
 		break;
 
 

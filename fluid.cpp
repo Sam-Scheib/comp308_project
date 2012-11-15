@@ -298,7 +298,7 @@ void Fluid::calcluateNormals(float** values) {
 	}
 }
 
-void Fluid::glInit() {
+/*void Fluid::glInit() {
 	if (!glInited) {
 		from = new FBO();
 		from->size = 256;
@@ -309,7 +309,7 @@ void Fluid::glInit() {
 		//shader = new ShaderProgram(Shader(fragShader, GL_FRAGMENT_SHADER));
 		glInited = true;
 	}
-}
+}*/
 
 void Fluid::displayFluid() {
 
