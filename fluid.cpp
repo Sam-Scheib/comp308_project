@@ -270,10 +270,16 @@ void Fluid::calculateSurface() {
 			//printf("height of %d,%d is %f\n", i, j, heights[i][j]);
 		}
 	}
+	topHeight = groundheight;
+	bottomHeight = waterheight;
 	for (int i = 1; i < rows-1; i++) {
 		for (int j = 1; j < cols-1; j++) {
 			heights[i][j] += velocities[i][j];
 			checkGroundHit(i,j);
+			if (heights[i][j] > topHeight)
+				topHeight = heights[i][j];
+			if (heights[i][j] < bottomHeight)
+				bottomHeight = heights[i][j];
 		}
 	}
 	calcluateNormals(heights);
@@ -537,4 +543,19 @@ void Fluid::generateTerrain() {
 
 float Fluid::checkSurfaceHit(int x, int y) {
 	return heights[x][y];
+}
+
+void Fluid::ripple(int x, int y) {
+	if (x < 2 || x > rows-2 || y < 2 || y > cols-2)
+		return;
+	float amount = 0.2;
+	velocities[x][y] -= amount;
+	velocities[x+1][y] -= amount/4;
+	velocities[x-1][y] -= amount/4;
+	velocities[x][y+1] -= amount/4;
+	velocities[x][y-1] -= amount/4;
+	velocities[x+1][y+1] += amount/2;
+	velocities[x-1][y-1] += amount/2;
+	velocities[x-1][y+1] += amount/2;
+	velocities[x+1][y-1] += amount/2;
 }
