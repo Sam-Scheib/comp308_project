@@ -29,6 +29,7 @@ private:
 
 public:
 	bool glInited, alpha;
+	float topHeight, bottomHeight;
 	void glInit();
 	Fluid(int, int);
 	~Fluid();
@@ -44,6 +45,7 @@ public:
 	float getTopWavePoint();
 	float getBottomWavePoint();
 	void displayFluid();
-	float checkSurfaceHit(int x, int y);
+	float checkSurfaceHit(int, int);
+	void ripple(int, int);
 };
 
